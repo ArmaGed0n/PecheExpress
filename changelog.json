@@ -1,5 +1,21 @@
 [
   {
+    "version": "1.0.13",
+    "date": "29/10/2026",
+    "notes": [
+      "Nouveau : transfert de sauvegarde (Profil > Réglages > Sauvegarde). Exporte ta progression pour la retrouver sur un autre téléphone ou une autre adresse du jeu.",
+      "Le jeu déménage sur GitHub Pages : pense à exporter ta sauvegarde avant de changer d'adresse."
+    ]
+  },
+  {
+    "version": "1.0.12",
+    "date": "29/10/2026",
+    "notes": [
+      "Le classement en ligne passe sur un nouveau serveur (Supabase). Tu n'as rien à faire : ta place et ton profil sont conservés.",
+      "Le classement est mieux protégé : tes identifiants privés ne sont jamais accessibles aux autres joueurs."
+    ]
+  },
+  {
     "version": "1.0.11",
     "date": "29/10/2026",
     "notes": [

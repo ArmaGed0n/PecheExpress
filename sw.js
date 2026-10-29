@@ -1,14 +1,14 @@
 /* Service worker de Pêche Express.
    >>> À CHAQUE MISE À JOUR : change le numéro de VERSION ci-dessous (ex. 1.0.4). <<<
    (Même si tu l'oublies, le jeu détecte tout de même les fichiers modifiés grâce à la « signature » ci-dessous.) */
-const VERSION = "1.0.11";
+const VERSION = "1.0.13";
 const CACHE = "peche-express-" + VERSION;
 // fichiers indispensables : si l'un manque, la nouvelle version n'est PAS installée (l'ancienne continue de marcher)
-const CORE = ["./", "./index.html", "./css/style.css", "./js/sprites.js", "./js/game.js", "./js/leaderboard.js", "./js/changelog.js", "./js/pwa.js", "./manifest.webmanifest", "./changelog.json"];
+const CORE = ["./", "./index.html", "./css/style.css", "./js/config.js", "./js/sprites.js", "./js/game.js", "./js/leaderboard.js", "./js/changelog.js", "./js/pwa.js", "./manifest.webmanifest", "./changelog.json"];
 // icônes : si l'une échoue, ce n'est pas grave
 const EXTRA = ["./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png", "./icons/apple-touch-icon.png", "./icons/favicon.png"];
 // fichiers surveillés pour détecter une mise à jour (doit être la MÊME liste que SIG_FILES dans js/pwa.js)
-const SIG_FILES = ["./index.html", "./css/style.css", "./js/sprites.js", "./js/game.js", "./js/leaderboard.js", "./js/changelog.js", "./js/pwa.js"];
+const SIG_FILES = ["./index.html", "./css/style.css", "./js/config.js", "./js/sprites.js", "./js/game.js", "./js/leaderboard.js", "./js/changelog.js", "./js/pwa.js"];
 const sigOf = r => r.headers.get("etag") || r.headers.get("last-modified") || r.headers.get("content-length") || "";
 
 self.addEventListener("install", e => {
@@ -40,7 +40,6 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;          // scripts externes (CDN) : on ne touche pas
-  if (url.pathname.startsWith("/.netlify/functions/")) return;   // API du classement : jamais mise en cache
   if (url.pathname.endsWith("/changelog.json")) {           // notes de version : toujours la plus récente si internet
     e.respondWith(fetch(req).then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); return res; }).catch(() => caches.match(req)));
     return;
