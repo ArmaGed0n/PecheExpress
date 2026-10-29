@@ -9,11 +9,19 @@ if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
     // MÊME liste que SIG_FILES dans sw.js
     var SIG_FILES = ["index.html", "css/style.css", "js/config.js", "js/sprites.js", "js/game.js", "js/leaderboard.js", "js/changelog.js", "js/pwa.js"];
     var showBanner = function () { banner.classList.add("show"); if (window.fillUpdateNotes) fillUpdateNotes(); };
-    var sigOf = function (r) { return r.headers.get("etag") || r.headers.get("last-modified") || r.headers.get("content-length") || ""; };
+    // Même empreinte de contenu que sw.js ; ne dépend pas des en-têtes variables de GitHub Pages.
+    function sigOfText(text) {
+      var h = 2166136261;
+      for (var i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); }
+      return (h >>> 0).toString(16);
+    }
 
     function remoteSig() {
       return Promise.all(SIG_FILES.map(function (f) {
-        return fetch(f, { method: "HEAD", cache: "no-store" }).then(function (r) { return r.ok ? sigOf(r) : ""; });
+        var url = f + (f.indexOf("?") >= 0 ? "&" : "?") + "__pe_check=" + Date.now();
+        return fetch(url, { method: "GET", cache: "no-store" }).then(function (r) {
+          return r.ok ? r.text().then(sigOfText) : "";
+        }).catch(function () { return ""; });
       })).then(function (a) { return a.join("|"); });
     }
     function checkRemote() {
