@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Pêche Express</title>
+  <meta name="theme-color" content="#080d1a">
+  <meta name="app-version" content="1.0.11">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pêche Express">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icons/favicon.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+  
+</head>
+<body>
+
+  <div id="game-container">
+    <div id="hud">
+      <div id="hud-card" role="button" tabindex="0" aria-label="Ouvrir le profil du pêcheur">
+        <div class="pf-ban" id="hud-ban"></div>
+        <div id="hud-av"></div>
+        <div class="hud-mid">
+          <div class="hud-name" id="hud-name">Pêcheur</div>
+          <div class="hud-rank"><span id="rank-val">Débutant</span></div>
+          <div class="hud-xprow"><button class="hud-lvl" id="level-btn" type="button" title="Voir l'expérience et compétences" aria-label="Expérience et compétences">NIV. <span id="level-val">1</span> ⚡</button><div class="hud-xp"><i id="hud-xp-bar"></i></div></div>
+        </div>
+        <div class="hud-gold" title="Argent"><span>🪙</span><span id="gold-val">0</span></div>
+      </div>
+    </div>
+
+    <div id="top-buttons">
+      <button class="icon-btn" id="dex-btn" title="Journal des Poissons"><img data-sprite="icon_dex" alt=""></button>
+      <button class="icon-btn quests-icon-btn" id="quests-btn" title="Quêtes" aria-label="Quêtes"><img data-sprite="icon_quest" alt=""></button>
+      <button class="icon-btn" id="shop-btn" title="Caisses"><img data-sprite="icon_shop" alt=""></button>
+      <button class="icon-btn" id="spots-btn" title="Spots de pêche"><img data-sprite="icon_spots" alt=""></button>
+      <button class="icon-btn leaderboard-icon-btn" id="leaderboard-btn" title="Classement en ligne" aria-label="Classement en ligne"><img data-sprite="icon_trophy" alt=""></button>
+    </div>
+
+    <div id="info-chips">
+      <div class="info-chip" id="time-chip">🌅 Aube</div>
+      <div class="info-chip" id="spot-chip">📍 Lac Tranquille</div>
+    </div>
+
+    <div id="canvas-container">
+      <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div id="action-btn-container">
+      <button class="btn-main" id="action-btn">
+        <span id="btn-text">LANCER LA LIGNE</span>
+      </button>
+    </div>
+
+    <button class="icon-btn bag-btn" id="skins-btn" title="Inventaire" aria-label="Inventaire"><img id="bag-img" data-sprite="bag" alt="Inventaire"></button>
+
+    <!-- Modale Quêtes -->
+    <div class="modal" id="quests-modal" role="dialog" aria-modal="true" aria-labelledby="quests-title">
+      <div class="modal-header">
+        <div class="modal-title" id="quests-title"><img class="title-ic" data-sprite="icon_quest" alt=""> Quêtes</div>
+        <button class="close-btn" id="close-quests" aria-label="Fermer les quêtes">&times;</button>
+      </div>
+      <div class="modal-body" id="quests-content"></div>
+    </div>
+
+    <!-- Modale Profil du Pêcheur -->
+    <div class="modal" id="profile-modal">
+      <div class="modal-header">
+        <div class="modal-title"><img class="title-ic" data-sprite="icon_profile" alt=""> Profil du Pêcheur</div>
+        <button class="close-btn" id="close-profile">&times;</button>
+      </div>
+      <div class="modal-body" id="profile-content"></div>
+    </div>
+
+    <!-- Modale Nouveautés (après une mise à jour) -->
+    <div class="modal" id="news-modal">
+      <div class="modal-header">
+        <div class="modal-title">✨ Nouveautés</div>
+        <button class="close-btn" id="close-news">&times;</button>
+      </div>
+      <div class="modal-body" id="news-body"></div>
+    </div>
+
+    <!-- Modale Niveau & Expérience + Améliorations -->
+    <div class="modal" id="level-modal">
+      <div class="modal-header">
+        <div class="modal-title">⚡ Progression & Maîtrise</div>
+        <button class="close-btn" id="close-level">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="fish-card" style="max-width: 100%; padding: 18px; background: rgba(18, 32, 54, 0.8);">
+          <div style="font-size: 15px; font-weight: 900; color: #ffd166;">NIVEAU ACTUEL : <span id="modal-lvl">1</span></div>
+          <div class="xp-container">
+            <div class="xp-header">
+              <span>EXPÉRIENCE GLOBALE</span>
+              <span id="modal-xp-text">0 / 50 XP</span>
+            </div>
+            <div class="xp-bar-bg">
+              <div class="xp-bar-fill" id="modal-xp-bar"></div>
+            </div>
+          </div>
+        </div>
+        <p style="font-size: 12px; color: #8d99ae; font-weight: 700; margin-top: 4px;">Améliorer vos compétences :</p>
+        <div id="level-items" style="display: flex; flex-direction: column; gap: 10px;"></div>
+      </div>
+    </div>
+
+    <!-- Modale Journal / Pokédex -->
+    <div class="modal" id="dex-modal">
+      <div class="modal-header">
+        <div class="modal-title"><img class="title-ic" data-sprite="icon_dex" alt=""> Carnet de Pêche</div>
+        <button class="close-btn" id="close-dex">&times;</button>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="setDexFilter('all', event)">Tous</button>
+        <button class="filter-btn" onclick="setDexFilter('caught', event)">Attrapés</button>
+        <button class="filter-btn" onclick="setDexFilter('missing', event)">Manquants</button>
+      </div>
+      <div class="modal-body">
+        <div id="dex-head"></div>
+        <div class="dex-grid" id="dex-items"></div>
+      </div>
+    </div>
+
+    <!-- Modale Fiche Détaillée Poisson (Style Piragraph) -->
+    <div class="modal" id="fish-detail-modal">
+      <div class="modal-header">
+        <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <button id="back-to-dex" style="background:none; border:none; color:#fff; font-size:22px; cursor:pointer;">❮</button>
+          <span>Fiche Espèce</span>
+        </div>
+        <button class="close-btn" id="close-fish-detail">&times;</button>
+      </div>
+      <div class="modal-body" id="fish-detail-content"></div>
+    </div>
+
+    <!-- Modale Boutique -->
+    <div class="modal" id="shop-modal">
+      <div class="modal-header">
+        <div class="modal-title"><img class="title-ic" data-sprite="icon_shop" alt=""> Caisses</div>
+        <button class="close-btn" id="close-shop">&times;</button>
+      </div>
+      <div class="modal-body" id="shop-items"></div>
+    </div>
+
+    <!-- Modale Skins -->
+    <div class="modal" id="skins-modal">
+      <div class="modal-header">
+        <div class="modal-title"><img class="title-ic" data-sprite="bag" alt=""> Inventaire</div>
+        <button class="close-btn" id="close-skins">&times;</button>
+      </div>
+      <div class="modal-body" id="skins-items"></div>
+    </div>
+
+    <div class="modal" id="crate-modal" style="justify-content:center;align-items:center;text-align:center">
+      <div class="fish-card" id="crate-card"></div>
+    </div>
+
+    <div class="modal" id="spots-modal">
+      <div class="modal-header">
+        <div class="modal-title"><img class="title-ic" data-sprite="icon_spots" alt=""> Spots de Pêche</div>
+        <button class="close-btn" id="close-spots">&times;</button>
+      </div>
+      <div class="modal-body" id="spots-items"></div>
+    </div>
+
+
+    <!-- Modale Classement en ligne -->
+    <div class="modal" id="leaderboard-modal" aria-labelledby="leaderboard-title" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div class="modal-title" id="leaderboard-title"><img class="title-ic" data-sprite="icon_trophy" alt=""> Classement mondial</div>
+        <button class="close-btn" id="close-leaderboard" aria-label="Fermer le classement">&times;</button>
+      </div>
+      <div class="modal-body leaderboard-body">
+        <div class="leaderboard-banner"><img data-sprite="lb_crown" alt=""><div><b>Prends la couronne !</b><span>Les meilleurs pêcheurs du monde</span></div></div>
+        <p class="leaderboard-hint">Les scores sont partagés en ligne. Une connexion Internet est nécessaire pour les envoyer et consulter le classement.</p>
+        <label class="leaderboard-label" for="leaderboard-pseudo">Ton pseudo (16 caractères maximum)</label>
+        <div class="leaderboard-pseudo-row">
+          <input id="leaderboard-pseudo" type="text" maxlength="16" autocomplete="nickname" placeholder="Ton pseudo" aria-label="Pseudo pour le classement">
+          <button id="leaderboard-save-pseudo" type="button">Enregistrer</button>
+        </div>
+        <button class="leaderboard-customize" id="leaderboard-customize" type="button"><img class="lb-btn-ic" data-sprite="lb_crown" alt=""><span>Personnaliser mon profil (cadre, avatar, bannière…)</span></button>
+        <div class="leaderboard-section-label">Période</div>
+        <div class="filter-bar leaderboard-periods" role="group" aria-label="Période du classement">
+          <button class="filter-btn active" data-lb-period="all" type="button"><img class="lb-btn-ic" data-sprite="lb_period_all" alt=""><span>Général</span></button>
+          <button class="filter-btn" data-lb-period="weekly" type="button"><img class="lb-btn-ic" data-sprite="lb_period_week" alt=""><span>Cette semaine</span></button>
+        </div>
+        <div class="leaderboard-section-label">Catégorie</div>
+        <div class="filter-bar leaderboard-categories" role="group" aria-label="Catégorie du classement">
+          <button class="filter-btn active" data-lb-category="level" type="button"><img class="lb-btn-ic" data-sprite="lb_cat_level" alt=""><span>Niveau</span></button>
+          <button class="filter-btn" data-lb-category="fish" type="button"><img class="lb-btn-ic" data-sprite="lb_cat_fish" alt=""><span>Poissons</span></button>
+          <button class="filter-btn" data-lb-category="biggest" type="button"><img class="lb-btn-ic" data-sprite="icon_ruler" alt=""><span>Record</span></button>
+        </div>
+        <div id="leaderboard-status" class="leaderboard-status" role="status" aria-live="polite">Chargement du classement…</div>
+        <ol id="leaderboard-list" class="leaderboard-list"></ol>
+        <p class="leaderboard-footnote">Sans compte : ton identifiant anonyme est conservé sur cet appareil. Les scores envoyés après l'activation du classement sont pris en compte. Le classement est pseudonyme, pas un système anti-triche absolu.</p>
+      </div>
+    </div>
+
+    <!-- Fiche d'un joueur (ouverte depuis le classement) -->
+    <div class="modal" id="player-profile-modal" role="dialog" aria-modal="true" aria-labelledby="player-profile-title">
+      <div class="modal-header">
+        <div class="modal-title" id="player-profile-title"><img class="title-ic" data-sprite="icon_profile" alt=""> Profil du pêcheur</div>
+        <button class="close-btn" id="close-player-profile" aria-label="Fermer le profil">&times;</button>
+      </div>
+      <div class="modal-body" id="player-profile-body"></div>
+    </div>
+
+    <!-- Modale Capture avec Confettis / Sparkles -->
+    <div class="modal" id="catch-modal">
+      <div class="fish-card">
+        <div style="font-size: 13px; font-weight: 900; color: #06d6a0; text-transform: uppercase; letter-spacing: 2px;">🎉 POISSON ATTRAPÉ !</div>
+        <div class="fish-emoji" id="catch-emoji">🐟</div>
+        <div class="fish-name" id="catch-name">Poisson-Rouge</div>
+        <div class="fish-rarity rarity-commune" id="catch-rarity">COMMUN</div>
+        
+        <div class="fish-details">
+          <div class="fish-stat">
+            <span class="fish-stat-val" id="catch-weight">12 cm</span>
+            <span class="fish-stat-lbl">Taille</span>
+          </div>
+          <div class="fish-stat">
+            <span class="fish-stat-val" id="catch-gold">+15 🪙</span>
+            <span class="fish-stat-lbl">Gain</span>
+          </div>
+        </div>
+
+        <div class="xp-container">
+          <div class="xp-header">
+            <span>PROGRESSION NIVEAU</span>
+            <span id="xp-text">0 / 50 XP</span>
+          </div>
+          <div class="xp-bar-bg">
+            <div class="xp-bar-fill" id="xp-bar"></div>
+          </div>
+        </div>
+
+        <button class="btn-main" id="catch-ok-btn">CONTINUER LA PÊCHE</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <script src="js/sprites.js" defer></script>
+  <script src="js/game.js" defer></script>
+  <script src="js/leaderboard.js" defer></script>
+<div id="update-banner"><div class="ub-top"><span id="ub-title">🎣 Nouvelle version disponible !</span><button id="update-btn">Mettre à jour</button></div><ul id="ub-notes"></ul></div>
+<script src="js/changelog.js" defer></script>
+<script src="js/pwa.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+[
+  {
+    "version": "1.0.11",
+    "date": "29/10/2026",
+    "notes": [
+      "Nouveau bandeau en haut : ton avatar encadré, ton pseudo, ton grade, ton niveau avec sa barre d'XP et ton argent. Touche-le pour ouvrir ton profil.",
+      "Le bouton profil de la colonne de droite est retiré (le bandeau le remplace). Le niveau ouvre toujours les compétences.",
+      "Carte de profil refaite : argent affiché, crayon pour changer de pseudo, barre d'XP plus lisible et accès aux compétences."
+    ]
+  },
+  {
+    "version": "1.0.10",
+    "date": "28/10/2026",
+    "notes": [
+      "Nouveau : quêtes du jour (3 par jour + bonus de série) et quêtes de la semaine, avec or, XP et appâts à récupérer.",
+      "Nouveau : combats de poissons légendaires avec phases Fureur et Dernier souffle, et matraquages où il faut taper vite sur le bouton.",
+      "Victoire contre un légendaire : or ×1,5, +50 XP et des appâts rares.",
+      "Deux nouveaux titres : Dompteur de légendes et Chasseur de quêtes.",
+      "Les messages d'échappée ne bloquent plus le jeu."
+    ]
+  },
+  {
+    "version": "1.0.9",
+    "date": "28/10/2026",
+    "notes": [
+      "Nouveau : profil de pêcheur personnalisable (onglet « Perso » du profil) : cadre, avatar, bannière, titre, badge favori et poisson favori.",
+      "6 cadres à débloquer avec ton niveau : Bois, Acier, Or, Bois sculpté, Acier ailé et Or royal.",
+      "Classement : avatars encadrés dans la liste, et touche un joueur pour voir son profil complet.",
+      "Ton profil est synchronisé en ligne (nécessite la mise à jour de la base : db/migration-1.0.9.sql)."
+    ]
+  },
+  {
+    "version": "1.0.8",
+    "date": "28/10/2026",
+    "notes": [
+      "Classement : nouvelles médailles or, argent et bronze pour le podium, avec lignes colorées.",
+      "Classement : nouveau bandeau avec couronne et icônes pour chaque période et catégorie.",
+      "Classement : pastilles de rang redessinées à partir de la 4e place.",
+      "Correction : l'affichage des nouveautés de la version 1.0.7 ne plante plus."
+    ]
+  },
+  {
+    "version": "1.0.7",
+    "date": "27/10/2026",
+    "notes": [
+      "Correction de la requête PostgreSQL du classement : typage explicite des paramètres niveau et XP nullable.",
+      "Conserve la synchronisation du niveau et de l’expérience envoyés par le jeu."
+    ]
+  },
+  {
+    "version": "1.0.6",
+    "date": "27/10/2026",
+    "notes": [
+      "Classement : le niveau et l'expérience réels du jeu sont maintenant synchronisés à chaque capture.",
+      "Correction : le classement ne reste plus bloqué à un ancien niveau calculé uniquement depuis les captures en ligne.",
+      "Les captures déjà en attente restent compatibles avec l'ancien format."
+    ]
+  },
+  {
+    "version": "1.0.5",
+    "date": "27/10/2026",
+    "notes": [
+      "Classement : le « plus gros poisson de la semaine » ne reprend plus le record de tous les temps.",
+      "Classement : une prise refusée par le serveur ne bloque plus l'envoi des suivantes.",
+      "Les mises à jour sont maintenant toujours détectées, même si le numéro de version n'a pas été changé.",
+      "L'icône du classement a désormais sa propre texture."
+    ]
+  },
+  {
+    "version": "1.0.4",
+    "date": "27/10/2026",
+    "notes": [
+      "Ajout d'un classement en ligne : niveau, poissons capturés et plus gros poisson.",
+      "Classements général et hebdomadaire, avec pseudo sans compte.",
+      "Ajout d'une fonction Netlify et d'un schéma PostgreSQL pour stocker les scores.",
+      "Les statistiques du classement sont calculées côté serveur à partir des captures validées.",
+      "Les événements de capture réalisés hors connexion sont mis en attente pour synchronisation au retour d'Internet."
+    ]
+  },
+  {
+    "version": "1.0.3",
+    "date": "27/10/2026",
+    "notes": [
+      "Correction du numéro de version dans le HTML et le service worker.",
+      "Maintenance et vérifications de cohérence de la version."
+    ]
+  },
+  {
+    "version": "1.0.2",
+    "date": "27/10/2026",
+    "notes": [
+      "Sauvegarde renforcée : validation des données et limites sur les valeurs restaurées.",
+      "Code séparé en fichiers CSS et JavaScript pour faciliter les prochaines évolutions.",
+      "Service worker amélioré : cache des fichiers modulaires et meilleure tolérance aux erreurs de cache.",
+      "En-têtes de sécurité Netlify ajoutés."
+    ]
+  },
+  {
+    "version": "1.0.1",
+    "date": "26/10/2026",
+    "notes": [
+      "Les menus défilent maintenant directement au doigt (plus besoin d'attraper la barre sur le côté).",
+      "Le bandeau de mise à jour affiche désormais les nouveautés de la version.",
+      "Une fenêtre « Nouveautés » s'ouvre au premier lancement après une mise à jour."
+    ]
+  },
+  {
+    "version": "1.0.0",
+    "date": "26/10/2026",
+    "notes": [
+      "Première version installable sur l'écran d'accueil.",
+      "27 poissons avec textures, 6 spots illustrés et carnet de pêche amélioré.",
+      "Nouveau système de caisses : garantie légendaire, ouverture ×5 et aperçu du contenu.",
+      "6 skins de bateau et inventaire en 5 onglets.",
+      "Profil refait, musique, ambiance par spot et effets sonores réglables."
+    ]
+  }
+]
