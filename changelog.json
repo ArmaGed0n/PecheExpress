@@ -1,5 +1,21 @@
 [
   {
+    "version": "1.0.15",
+    "date": "29/10/2026",
+    "notes": [
+      "Configuration du classement en ligne avec l’adresse de la fonction Supabase leaderboard.",
+      "Conserve la correction du bandeau de mise à jour répétitif sur GitHub Pages."
+    ]
+  },
+  {
+    "version": "1.0.14",
+    "date": "29/10/2026",
+    "notes": [
+      "Correction du bandeau de mise à jour répétitif sur GitHub Pages : comparaison du contenu réel des fichiers plutôt que des en-têtes HTTP.",
+      "Le classement Supabase nécessite toujours l'adresse de la fonction dans js/config.js."
+    ]
+  },
+  {
     "version": "1.0.13",
     "date": "29/10/2026",
     "notes": [
