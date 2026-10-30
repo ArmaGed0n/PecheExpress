@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Pêche Express</title>
   <meta name="theme-color" content="#080d1a">
-  <meta name="app-version" content="1.0.15">
+  <meta name="app-version" content="1.0.14">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -44,6 +44,7 @@
     <div id="info-chips">
       <div class="info-chip" id="time-chip">🌅 Aube</div>
       <div class="info-chip" id="spot-chip">📍 Lac Tranquille</div>
+      <div class="info-chip quest-chip" id="quest-chip" role="button" tabindex="0" hidden></div>
     </div>
 
     <div id="canvas-container">
@@ -88,23 +89,12 @@
     <!-- Modale Niveau & Expérience + Améliorations -->
     <div class="modal" id="level-modal">
       <div class="modal-header">
-        <div class="modal-title">⚡ Progression & Maîtrise</div>
-        <button class="close-btn" id="close-level">&times;</button>
+        <div class="modal-title"><img class="title-ic" data-sprite="icon_skills" alt=""> Progression &amp; Maîtrise</div>
+        <button class="close-btn" id="close-level" aria-label="Fermer">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="fish-card" style="max-width: 100%; padding: 18px; background: rgba(18, 32, 54, 0.8);">
-          <div style="font-size: 15px; font-weight: 900; color: #ffd166;">NIVEAU ACTUEL : <span id="modal-lvl">1</span></div>
-          <div class="xp-container">
-            <div class="xp-header">
-              <span>EXPÉRIENCE GLOBALE</span>
-              <span id="modal-xp-text">0 / 50 XP</span>
-            </div>
-            <div class="xp-bar-bg">
-              <div class="xp-bar-fill" id="modal-xp-bar"></div>
-            </div>
-          </div>
-        </div>
-        <p style="font-size: 12px; color: #8d99ae; font-weight: 700; margin-top: 4px;">Améliorer vos compétences :</p>
+        <div id="level-summary"></div>
+        <div class="q-head"><span>Compétences</span><small>Améliore-les avec ton or</small></div>
         <div id="level-items" style="display: flex; flex-direction: column; gap: 10px;"></div>
       </div>
     </div>

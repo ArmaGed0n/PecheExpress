@@ -71,7 +71,7 @@
       let pool = SPECIES.filter(f => f.spots.includes(spotId) && (!f.only || f.only.includes(per)));
       if (!pool.length) pool = SPECIES.filter(f => f.spots.includes(spotId) && !f.only);
       const base = { commune: 60, rare: 25, epique: 10, legendaire: 3 };
-      const ws = pool.map(f => base[f.rarity] * (f.rarity === "commune" ? 1 : 1 + 0.25 * bait) * (f.prefer && f.prefer.includes(per) ? 2 : 1));
+      const ws = pool.map(f => base[f.rarity] * (f.rarity === "commune" ? 1 : 1 + 0.25 * bait + 0.06 * (skillLevel("luck") - 1)) * (f.prefer && f.prefer.includes(per) ? 2 : 1));
       let r = Math.random() * ws.reduce((a, b) => a + b, 0);
       for (let i = 0; i < pool.length; i++) { r -= ws[i]; if (r <= 0) return pool[i]; }
       return pool[pool.length - 1];
@@ -101,8 +101,17 @@
 
     const SKILL_UPGRADES = [
       { id: "cast_bar", name: "Précision du Lancer", desc: "Ralentit la jauge pour faciliter le lancer parfait", basePrice: 35, mult: 1.6, level: 1 },
-      { id: "fight_bar", name: "Maîtrise du Combat", desc: "Élargit la zone verte et stabilise le fil", basePrice: 45, mult: 1.7, level: 1 }
+      { id: "fight_bar", name: "Maîtrise du Combat", desc: "Élargit la zone verte et stabilise le fil", basePrice: 45, mult: 1.7, level: 1 },
+      { id: "luck", name: "Œil de Lynx", desc: "Plus de chances d'attraper des poissons rares, épiques et légendaires", basePrice: 80, mult: 1.55, level: 1, max: 10 },
+      { id: "trader", name: "Négociant", desc: "Chaque poisson attrapé rapporte plus d'or", basePrice: 70, mult: 1.5, level: 1, max: 10 }
     ];
+    const skillLevel = id => SKILL_UPGRADES.find(s => s.id === id).level;
+    const SKILL_INFO = {
+      cast_bar: { icon: "🎯", eff: l => `Jauge de lancer à ${Math.round(Math.max(0.3, 1 - (l - 1) * 0.12) * 100)} % de sa vitesse` },
+      fight_bar: { icon: "🛡️", eff: l => `Zone verte ${Math.round((0.4 + (l - 1) * 0.05) * 100)} % · fil ${Math.round(Math.max(0.2, 1 - (l - 1) * 0.1) * 100)} % instable` },
+      luck: { icon: "🍀", eff: l => `+${(l - 1) * 6} % de chances de poissons rares ou mieux` },
+      trader: { icon: "💰", eff: l => `+${(l - 1) * 5} % d'or par prise` }
+    };
 
     /* Game State */
     let state = {
@@ -1074,7 +1083,7 @@
             if (--state.nextSurge <= 0) { state.surge = "warn"; state.surgeT = 36; playSound("bite"); triggerVibration([60]); }
           } else if (--state.surgeT <= 0) {
             if (state.isPressing) { state.tension += 38; state.msg = "TROP TENDU !"; }
-            else { state.reelProgress = Math.min(100, state.reelProgress + 8); state.msg = "ESQUIVE ! 💨"; playSound("win"); }
+            else { state.reelProgress = Math.min(100, state.reelProgress + 8); state.msg = "ESQUIVE ! 💨"; playSound("win"); questEvent({ kind: "dodge" }); }
             state.msgT = 50; state.surge = "none"; state.nextSurge = (200 + Math.random() * 180) / d;
           }
           state.tension = Math.max(0, Math.min(100, state.tension));
@@ -1147,7 +1156,7 @@
       const fish = state.activeFish;
       const weight = Math.floor(fish.minW + Math.random() * (fish.maxW - fish.minW));
       const boss = state.boss;
-      const earnedGold = Math.floor(fish.price * (weight / fish.minW) * lureMult() * (boss ? 1.5 : 1));
+      const earnedGold = Math.floor(fish.price * (weight / fish.minW) * lureMult() * (boss ? 1.5 : 1) * (1 + 0.05 * (skillLevel("trader") - 1)));
 
       state.gold += earnedGold; state.xp += 25 + (boss ? 50 : 0);
       let bossBaitTxt = "";
@@ -1265,14 +1274,9 @@
 
     document.getElementById("level-btn").onclick = (e) => {
       e.stopPropagation();
-      document.getElementById("modal-lvl").innerText = state.level;
-      const currentMaxXP = state.level * 50;
-      document.getElementById("modal-xp-text").innerText = `${state.xp} / ${currentMaxXP} XP`;
-      document.getElementById("modal-xp-bar").style.width = `${Math.min(100, Math.floor((state.xp / currentMaxXP) * 100))}%`;
       renderLevelUpgrades();
       levelModal.classList.add("active");
-    };
-    document.getElementById("close-level").onclick = () => levelModal.classList.remove("active");
+    };    document.getElementById("close-level").onclick = () => levelModal.classList.remove("active");
 
     document.getElementById("dex-btn").onclick = () => { renderDex(); dexModal.classList.add("active"); };
     document.getElementById("close-dex").onclick = () => dexModal.classList.remove("active");
@@ -1496,17 +1500,31 @@
     };
 
     function renderLevelUpgrades() {
+      const rk = RANKS[rankIndexOf(state.level)], nx = RANKS[rankIndexOf(state.level) + 1], maxXP = state.level * 50, pct = Math.min(100, Math.floor(state.xp / maxXP * 100));
+      document.getElementById("level-summary").innerHTML = `<div class="pf-lvl" style="--rc:${rk.color}">
+        <div class="pf-lvl-top"><span class="pf-rankname">${rk.name}</span><span class="pf-niv">NIV. ${state.level}</span></div>
+        <div class="pf-xp"><i style="width:${pct}%"></i><em>${state.xp} / ${maxXP} XP</em></div>
+        <div class="pf-lvl-sub"><span>Encore <b>${Math.max(0, maxXP - state.xp)} XP</b> avant le niveau ${state.level + 1}</span><span>${nx ? "Prochain grade : " + nx.name : "🏆 Grade maximum"}</span></div></div>
+        <div class="sk-gold">🪙 <b>${state.gold.toLocaleString("fr-FR")}</b> disponibles</div>`;
       const container = document.getElementById("level-items"); container.innerHTML = "";
       SKILL_UPGRADES.forEach((up, idx) => {
-        const cost = Math.floor(up.basePrice * Math.pow(up.mult, up.level - 1));
-        const div = document.createElement("div"); div.className = "shop-item";
-        div.innerHTML = `<div class="shop-item-info"><h4>${up.name} (Niv. ${up.level})</h4><p>${up.desc}</p></div><button class="buy-btn" ${state.gold < cost ? "disabled" : ""} onclick="buySkillUpgrade(${idx})">${cost} 🪙</button>`;
+        const info = SKILL_INFO[up.id] || { icon: "⭐", eff: () => "" }, isMax = !!up.max && up.level >= up.max;
+        const cost = Math.floor(up.basePrice * Math.pow(up.mult, up.level - 1)), can = !isMax && state.gold >= cost;
+        const pips = Array.from({ length: up.max || 10 }, (_, n) => `<i class="${n < up.level ? "on" : ""}"></i>`).join("");
+        const div = document.createElement("div"); div.className = "sk-card" + (isMax ? " max" : "");
+        div.innerHTML = `<div class="sk-ic">${info.icon}</div>
+          <div class="sk-main"><div class="sk-name">${up.name}<span>Niv. ${up.level}${up.max ? " / " + up.max : ""}</span></div>
+            <div class="sk-pips">${pips}</div><div class="sk-desc">${up.desc}</div>
+            <div class="sk-eff">Actuel : <b>${info.eff(up.level)}</b></div>
+            ${isMax ? `<div class="sk-eff next">✨ Niveau maximum atteint</div>` : `<div class="sk-eff next">Niveau ${up.level + 1} : <b>${info.eff(up.level + 1)}</b></div>`}</div>
+          <button class="buy-btn sk-buy" ${can ? "" : "disabled"} onclick="buySkillUpgrade(${idx})">${isMax ? "MAX" : cost.toLocaleString("fr-FR") + " 🪙"}</button>`;
         container.appendChild(div);
       });
     }
 
     window.buySkillUpgrade = function(index) {
       const up = SKILL_UPGRADES[index]; const cost = Math.floor(up.basePrice * Math.pow(up.mult, up.level - 1));
+      if (up.max && up.level >= up.max) return;
       if (state.gold >= cost) { state.gold -= cost; up.level += 1; saveGame(); updateHUD(); renderLevelUpgrades(); }
     };
 
@@ -1583,21 +1601,26 @@
     /* ===== Quêtes du jour / de la semaine ===== */
     const QUEST_TIERS = lvl => lvl < 5 ? 0 : lvl < 12 ? 1 : 2;
     const QUEST_NEED = { catch: [6, 10, 15], night: [2, 3, 4], rare: [1, 2, 3], spot: [3, 5, 7], species: [3, 4, 6], gold: [200, 500, 1200], big: [1, 2, 3], boss: [1, 1, 1],
-                         wcatch: [40, 60, 90], wrare: [6, 10, 15], wspecies: [6, 8, 12], wgold: [1500, 4000, 9000], wbig: [5, 8, 12] };
-    const QUEST_ICON = { catch: "🎣", night: "🌙", rare: "💎", spot: "📍", species: "📖", gold: "🪙", big: "📏", boss: "⚔️" };
+                         target: [1, 1, 1], epic: [1, 2, 3], dodge: [4, 6, 8],
+                         wcatch: [40, 60, 90], wrare: [6, 10, 15], wspecies: [6, 8, 12], wgold: [1500, 4000, 9000], wbig: [5, 8, 12], wdodge: [15, 25, 35], wepic: [3, 5, 8] };
+    const QUEST_ICON = { catch: "🎣", night: "🌙", rare: "💎", spot: "📍", species: "📖", gold: "🪙", big: "📏", boss: "⚔️", target: "🐟", epic: "💜", dodge: "💨" };
     const questKind = t => t.replace(/^w/, "");
     const spotNameOf = id => { const s = SPOTS.find(x => x.id === id); return s ? s.name : "ce spot"; };
+    const fishNameOf = id => { const f = SPECIES.find(x => x.id === id); return f ? f.name : "un poisson"; };
     function questText(q) {
       const n = q.need, pl = n > 1 ? "s" : "";
       switch (questKind(q.t)) {
         case "catch": return `Attrape ${n} poisson${pl}`;
         case "night": return `Attrape ${n} poisson${pl} la nuit`;
         case "rare": return `Attrape ${n} poisson${pl} rare${pl} ou mieux`;
+        case "epic": return `Attrape ${n} poisson${pl} épique${pl} ou mieux`;
         case "spot": return `Attrape ${n} poissons à ${spotNameOf(q.spot)}`;
         case "species": return `Attrape ${n} espèces différentes`;
         case "gold": return `Gagne ${n} 🪙 en pêchant`;
         case "big": return `Attrape ${n} gros poisson${pl} (60 % de la taille max)`;
         case "boss": return `Gagne ${n} combat${pl} de légendaire${pl}`;
+        case "target": return `Attrape : ${fishNameOf(q.fish)}`;
+        case "dodge": return `Esquive ${n} attaque${pl} de poisson en combat`;
       }
       return "Quête";
     }
@@ -1612,49 +1635,69 @@
     }
     const shuffled = (arr, rnd) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
     const roundTo5 = n => Math.max(5, Math.round(n / 5) * 5);
-    function availableSpeciesCount() { return SPECIES.filter(f => f.spots.some(s => state.unlockedSpots[s])).length; }
-    function mkQuest(t, tier, rnd, weekly) {
+    const accessibleSpecies = () => SPECIES.filter(f => f.spots.some(s => state.unlockedSpots[s]));
+    const availableSpeciesCount = () => accessibleSpecies().length;
+    const epicReachable = () => accessibleSpecies().some(f => f.rarity === "epique" || f.rarity === "legendaire");
+    function mkQuest(t, tier, rnd, weekly, challenge) {
       const lvl = state.level;
       const q = { t, need: QUEST_NEED[t][tier], have: 0, claimed: false, gold: 0, xp: 0, baits: {} };
       if (questKind(t) === "species") { q.need = Math.max(2, Math.min(q.need, availableSpeciesCount() - 1)); q.seen = []; }
       if (t === "spot") { const spots = Object.keys(state.unlockedSpots).filter(id => SPOTS.some(s => s.id === id)); q.spot = spots[Math.floor(rnd() * spots.length)] || "lac"; }
+      if (t === "target") {
+        let pool = accessibleSpecies().filter(f => f.rarity === "rare" || f.rarity === "epique");
+        if (!pool.length) pool = accessibleSpecies();
+        q.fish = (pool[Math.floor(rnd() * pool.length)] || SPECIES[0]).id;
+      }
       if (weekly) { q.gold = roundTo5(250 + lvl * 25); q.xp = 80 + tier * 40; q.baits = tier >= 2 ? { shine: 2, gold: 1 } : { shine: 2 }; }
       else { q.gold = roundTo5(30 + lvl * 6); q.xp = 10 + tier * 5; }
+      if (challenge) { q.challenge = true; q.gold = roundTo5(q.gold * 2.2); q.xp *= 2; q.baits = { shine: 1 }; }
       return q;
+    }
+    const dailyPool = used => ["night", "rare", "spot", "species", "gold", "big", "dodge"].filter(t => !used.includes(t));
+    function genChallenge(dk, tier, used) {
+      const rnd = seededRng("c" + dk + ":" + tier);
+      const opts = shuffled(["target", "dodge"].concat(epicReachable() ? ["epic"] : []), rnd).filter(t => !used.includes(t));
+      return mkQuest(opts[0] || "target", tier, rnd, false, true);
     }
     function genDaily(dk) {
       const tier = QUEST_TIERS(state.level), rnd = seededRng("d" + dk + ":" + tier);
-      const pool = shuffled(["night", "rare", "spot", "species", "gold", "big"], rnd);
-      return ["catch", pool[0], pool[1]].map(t => mkQuest(t, tier, rnd, false));
+      const pool = shuffled(dailyPool([]), rnd);
+      const base = ["catch", pool[0], pool[1]].map(t => mkQuest(t, tier, rnd, false));
+      return base.concat([genChallenge(dk, tier, base.map(x => x.t))]);
     }
     function genWeekly(wk) {
       const tier = QUEST_TIERS(state.level), rnd = seededRng("w" + wk + ":" + tier);
       const legendReachable = SPECIES.some(f => f.rarity === "legendaire" && f.spots.some(s => state.unlockedSpots[s]));
       const a = ["wcatch", "wgold"][Math.floor(rnd() * 2)];
-      const second = shuffled(["wrare", "wspecies", "wbig"].concat(legendReachable ? ["boss", "boss"] : []), rnd)[0];
-      return [mkQuest(a, tier, rnd, true), mkQuest(second, tier, rnd, true)];
+      const b = shuffled(["wrare", "wspecies", "wbig"], rnd)[0];
+      const c = legendReachable ? "boss" : shuffled(["wdodge"].concat(epicReachable() ? ["wepic"] : []), rnd)[0];
+      return [a, b, c].map(t => mkQuest(t, tier, rnd, true));
     }
     function sanitizeQuests(raw) {
       const keyOk = v => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
       if (!isPlainObject(raw) || !keyOk(raw.day) || !keyOk(raw.week)) return null;
-      const cleanList = list => (Array.isArray(list) ? list : []).slice(0, 4).map(q => {
+      const cleanList = list => (Array.isArray(list) ? list : []).slice(0, 5).map(q => {
         if (!isPlainObject(q) || !QUEST_NEED[q.t]) return null;
         const out = { t: q.t, need: Math.floor(clampNumber(q.need, 1, 1, 100000)), have: 0, claimed: !!q.claimed, gold: Math.floor(clampNumber(q.gold, 0, 0, 100000)), xp: Math.floor(clampNumber(q.xp, 0, 0, 10000)), baits: {} };
         out.have = Math.floor(clampNumber(q.have, 0, 0, out.need));
+        if (q.challenge) out.challenge = true;
         if (isPlainObject(q.baits)) BAITS.forEach(b => { const n = Math.floor(clampNumber(q.baits[b.id], 0, 0, 20)); if (n) out.baits[b.id] = n; });
         if (q.t === "spot") out.spot = SPOTS.some(s => s.id === q.spot) ? q.spot : "lac";
+        if (q.t === "target") out.fish = SPECIES.some(f => f.id === q.fish) ? q.fish : SPECIES[0].id;
         if (questKind(q.t) === "species") out.seen = (Array.isArray(q.seen) ? q.seen : []).filter(id => typeof id === "string" && SPECIES.some(f => f.id === id)).slice(0, 60);
         return out;
       }).filter(Boolean);
-      return { day: raw.day, week: raw.week, daily: cleanList(raw.daily), weekly: cleanList(raw.weekly), bonusClaimed: !!raw.bonusClaimed,
-               streak: Math.floor(clampNumber(raw.streak, 0, 0, 10000)), lastBonus: keyOk(raw.lastBonus) ? raw.lastBonus : "" };
+      return { day: raw.day, week: raw.week, daily: cleanList(raw.daily), weekly: cleanList(raw.weekly), bonusClaimed: !!raw.bonusClaimed, weekBonusClaimed: !!raw.weekBonusClaimed,
+               rerolls: Math.floor(clampNumber(raw.rerolls, 0, 0, 9)), streak: Math.floor(clampNumber(raw.streak, 0, 0, 10000)), lastBonus: keyOk(raw.lastBonus) ? raw.lastBonus : "" };
     }
     function ensureQuests() {
       const now = new Date(), dk = dayKeyOf(now), wk = weekKeyOf(now);
       let q = state.quests;
-      if (!q) q = state.quests = { day: "", week: "", daily: [], weekly: [], bonusClaimed: false, streak: 0, lastBonus: "" };
-      if (q.day !== dk || !q.daily.length) { q.day = dk; q.daily = genDaily(dk); q.bonusClaimed = false; }
-      if (q.week !== wk || !q.weekly.length) { q.week = wk; q.weekly = genWeekly(wk); }
+      if (!q) q = state.quests = { day: "", week: "", daily: [], weekly: [], bonusClaimed: false, weekBonusClaimed: false, rerolls: 0, streak: 0, lastBonus: "" };
+      if (q.day !== dk || !q.daily.length) { q.day = dk; q.daily = genDaily(dk); q.bonusClaimed = false; q.rerolls = 0; }
+      if (q.week !== wk || !q.weekly.length) { q.week = wk; q.weekly = genWeekly(wk); q.weekBonusClaimed = false; }
+      // anciennes sauvegardes : ajoute le défi du jour s'il manque
+      if (q.daily.length === 3 && !q.daily.some(x => x.challenge) && !q.bonusClaimed) q.daily.push(genChallenge(q.day, QUEST_TIERS(state.level), q.daily.map(x => x.t)));
       return q;
     }
     function gainXP(n) {
@@ -1675,40 +1718,70 @@
       el.textContent = msg; el.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove("show"), 3200);
     }
     function questEvent(ev) {
-      const q = ensureQuests(); let changed = false; const done = [];
+      const q = ensureQuests(); let changed = false; const done = [], kind = ev.kind || "catch";
       q.daily.concat(q.weekly).forEach(x => {
         if (x.have >= x.need) return;
         let add = 0;
-        switch (questKind(x.t)) {
+        if (kind === "dodge") { if (questKind(x.t) === "dodge") add = 1; }
+        else switch (questKind(x.t)) {
           case "catch": add = 1; break;
           case "night": if (ev.period === "Nuit") add = 1; break;
           case "rare": if (ev.fish.rarity !== "commune") add = 1; break;
+          case "epic": if (ev.fish.rarity === "epique" || ev.fish.rarity === "legendaire") add = 1; break;
           case "spot": if (ev.spot === x.spot) add = 1; break;
           case "species": if (x.seen && !x.seen.includes(ev.fish.id)) { x.seen.push(ev.fish.id); add = 1; } break;
           case "gold": add = ev.gold; break;
           case "big": if (ev.weight >= ev.fish.minW + 0.6 * (ev.fish.maxW - ev.fish.minW)) add = 1; break;
           case "boss": if (ev.boss) add = 1; break;
+          case "target": if (ev.fish.id === x.fish) add = 1; break;
         }
         if (add > 0) { x.have = Math.min(x.need, x.have + add); changed = true; if (x.have >= x.need) done.push(x); }
       });
       if (changed) { saveGame(); refreshQuestBadge(); }
       if (done.length) setTimeout(() => toast(`🎯 Quête terminée : ${questText(done[0])}${done.length > 1 ? ` (+${done.length - 1})` : ""}`), 900);
     }
-    function claimableCount() {
-      const q = ensureQuests();
-      const n = q.daily.concat(q.weekly).filter(x => x.have >= x.need && !x.claimed).length;
-      return n + (!q.bonusClaimed && q.daily.length && q.daily.every(x => x.claimed) ? 1 : 0);
+    const dayBonusReady = q => !q.bonusClaimed && q.daily.length && q.daily.every(x => x.claimed);
+    const weekBonusReady = q => !q.weekBonusClaimed && q.weekly.length && q.weekly.every(x => x.claimed);
+    const claimable = list => list.filter(x => x.have >= x.need && !x.claimed).length;
+    function claimableCount() { const q = ensureQuests(); return claimable(q.daily) + claimable(q.weekly) + (dayBonusReady(q) ? 1 : 0) + (weekBonusReady(q) ? 1 : 0); }
+    function trackedQuest() {
+      const q = ensureQuests(), open = q.daily.concat(q.weekly).filter(x => x.have < x.need);
+      if (!open.length) return null;
+      return open.slice().sort((a, b) => (b.have / b.need) - (a.have / a.need))[0];
     }
     function refreshQuestBadge() {
       const btn = document.getElementById("quests-btn"); if (!btn) return;
       const n = claimableCount(); btn.classList.toggle("has-dot", n > 0); btn.dataset.n = n > 9 ? "9+" : String(n);
+      const chip = document.getElementById("quest-chip");
+      if (chip) {
+        const t = trackedQuest();
+        if (n > 0) { chip.textContent = `🎁 ${n} récompense${n > 1 ? "s" : ""} à récupérer`; chip.classList.add("ready"); chip.hidden = false; }
+        else if (t) { chip.textContent = `${QUEST_ICON[questKind(t.t)] || "🎯"} ${t.have}/${t.need} · ${questText(t).replace(/ \(60 % de la taille max\)/, "")}`; chip.classList.remove("ready"); chip.hidden = false; }
+        else { chip.hidden = true; }
+      }
       if (document.getElementById("quests-modal").classList.contains("active")) renderQuests();
     }
+    function claimOne(x) {
+      if (!x || x.claimed || x.have < x.need) return false;
+      x.claimed = true; state.stats.questsDone++; giveReward(x); return true;
+    }
+    function afterClaim() { saveGame(); updateHUD(); refreshQuestBadge(); renderQuests(); }
     window.claimQuest = function (kind, i) {
-      const q = ensureQuests(), x = (kind === "w" ? q.weekly : q.daily)[i];
-      if (!x || x.claimed || x.have < x.need) return;
-      x.claimed = true; state.stats.questsDone++; giveReward(x);
-      playSound("coin"); triggerVibration([40]); saveGame(); updateHUD(); refreshQuestBadge(); renderQuests();
+      const q = ensureQuests();
+      if (claimOne((kind === "w" ? q.weekly : q.daily)[i])) { playSound("coin"); triggerVibration([40]); afterClaim(); }
+    };
+    window.claimAllQuests = function () {
+      const q = ensureQuests(); let n = 0;
+      q.daily.concat(q.weekly).forEach(x => { if (claimOne(x)) n++; });
+      if (n) { playSound("coin"); triggerVibration([40, 30, 40]); afterClaim(); toast(`🎁 ${n} récompense${n > 1 ? "s" : ""} récupérée${n > 1 ? "s" : ""} !`); }
+    };
+    window.rerollQuest = function (i) {
+      const q = ensureQuests(), x = q.daily[i];
+      if (!x || x.claimed || x.have >= x.need || x.challenge || (q.rerolls || 0) >= 1) return;
+      const used = q.daily.map(d => d.t), tier = QUEST_TIERS(state.level), pool = dailyPool(used);
+      const t = pool[Math.floor(Math.random() * pool.length)]; if (!t) return;
+      q.daily[i] = mkQuest(t, tier, Math.random, false); q.rerolls = (q.rerolls || 0) + 1;
+      playSound("ui"); saveGame(); refreshQuestBadge(); renderQuests(); toast("🔄 Nouvelle quête !");
     };
     const streakMult = s => Math.min(1.5, 1 + 0.1 * Math.max(0, s - 1));
     function bonusReward() {
@@ -1717,43 +1790,70 @@
       const streak = q.lastBonus === dayKeyOf(yesterday) ? q.streak + 1 : (q.lastBonus === q.day ? q.streak : 1);
       return { streak, gold: roundTo5((100 + state.level * 12) * streakMult(streak)), xp: 30, baits: tier >= 1 ? { worm: 3, shine: 1 } : { worm: 3 } };
     }
+    const weekBonusRewardOf = () => ({ gold: roundTo5(400 + state.level * 40), xp: 150, baits: { shine: 3, gold: 1 } });
     window.claimBonus = function () {
-      const q = ensureQuests();
-      if (q.bonusClaimed || !q.daily.length || !q.daily.every(x => x.claimed)) return;
+      const q = ensureQuests(); if (!dayBonusReady(q)) return;
       const r = bonusReward(); q.bonusClaimed = true; q.streak = r.streak; q.lastBonus = q.day;
-      giveReward(r); playSound("legend"); triggerVibration([60, 40, 60]); saveGame(); updateHUD(); refreshQuestBadge(); renderQuests();
+      giveReward(r); playSound("legend"); triggerVibration([60, 40, 60]); afterClaim();
       toast(`🎁 Bonus du jour récupéré ! Série : ${r.streak} jour${r.streak > 1 ? "s" : ""}`);
+    };
+    window.claimWeekBonus = function () {
+      const q = ensureQuests(); if (!weekBonusReady(q)) return;
+      q.weekBonusClaimed = true; giveReward(weekBonusRewardOf()); playSound("legend"); triggerVibration([80, 40, 80]); afterClaim();
+      toast("🏆 Coffre de la semaine récupéré !");
     };
     function untilText(target) {
       const ms = Math.max(0, target - Date.now()), m = Math.ceil(ms / 60000), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
       return d > 0 ? `${d} j ${h} h` : h > 0 ? `${h} h ${pad2(mm)}` : `${mm} min`;
     }
-    function questCard(x, kind, i) {
+    function questCard(x, kind, i, q) {
       const pct = Math.min(100, Math.floor(x.have / x.need * 100)), done = x.have >= x.need;
       const btn = x.claimed ? `<div class="qc-state ok">✓ Récupérée</div>` : done ? `<button class="qc-claim" onclick="claimQuest('${kind}',${i})">Récupérer</button>` : `<div class="qc-state">${Math.min(x.have, x.need)} / ${x.need}</div>`;
-      return `<div class="qcard ${done ? "done" : ""} ${x.claimed ? "claimed" : ""}"><div class="qc-ic">${QUEST_ICON[questKind(x.t)] || "🎯"}</div>
-        <div class="qc-main"><div class="qc-txt">${esc(questText(x))}</div><div class="qc-bar"><i style="width:${pct}%"></i></div><div class="qc-rw">${esc(rewardText(x))}</div></div>${btn}</div>`;
+      const canReroll = kind === "d" && !x.claimed && !done && !x.challenge && (q.rerolls || 0) < 1;
+      const reroll = canReroll ? `<button class="qc-reroll" onclick="rerollQuest(${i})" aria-label="Changer cette quête" title="Changer cette quête (1 fois par jour)">🔄</button>` : "";
+      return `<div class="qcard ${done ? "done" : ""} ${x.claimed ? "claimed" : ""} ${x.challenge ? "challenge" : ""}"><div class="qc-ic">${QUEST_ICON[questKind(x.t)] || "🎯"}</div>
+        <div class="qc-main"><div class="qc-txt">${x.challenge ? `<span class="qc-tag">DÉFI</span>` : ""}${esc(questText(x))}</div><div class="qc-bar"><i style="width:${pct}%"></i></div><div class="qc-rw">${esc(rewardText(x))}</div></div>${reroll}${btn}</div>`;
     }
+    function bonusCard(icon, title, doneN, total, r, ready, claimed, onclick, extra) {
+      if (claimed) return `<div class="qcard claimed bonus"><div class="qc-ic">${icon}</div><div class="qc-main"><div class="qc-txt">${title}</div><div class="qc-rw">Récupéré${extra || ""}</div></div><div class="qc-state ok">✓</div></div>`;
+      return `<div class="qcard bonus ${ready ? "done" : ""}"><div class="qc-ic">${icon}</div><div class="qc-main"><div class="qc-txt">${title}</div><div class="qc-bar"><i style="width:${Math.floor(doneN / Math.max(1, total) * 100)}%"></i></div><div class="qc-rw">${esc(rewardText(r))}${extra || ""}</div></div>${ready ? `<button class="qc-claim" onclick="${onclick}">Récupérer</button>` : `<div class="qc-state">${doneN} / ${total}</div>`}</div>`;
+    }
+    let qTab = "day";
+    window.setQTab = function (t) { qTab = t; renderQuests(); };
     function renderQuests() {
       const box = document.getElementById("quests-content"); if (!box) return;
-      const q = ensureQuests(), now = new Date();
+      const q = ensureQuests(), now = new Date(), st = profileStats();
       const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
-      const nextWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (8 - ((now.getDay() + 6) % 7 + 1))).getTime();
-      const dailyClaimed = q.daily.filter(x => x.claimed).length, allDone = q.daily.length && dailyClaimed === q.daily.length;
-      const br = bonusReward();
-      const bonus = q.bonusClaimed ? `<div class="qcard claimed bonus"><div class="qc-ic">🎁</div><div class="qc-main"><div class="qc-txt">Bonus du jour</div><div class="qc-rw">Récupéré · série de ${q.streak} jour${q.streak > 1 ? "s" : ""} 🔥</div></div><div class="qc-state ok">✓</div></div>`
-        : `<div class="qcard bonus ${allDone ? "done" : ""}"><div class="qc-ic">🎁</div><div class="qc-main"><div class="qc-txt">Bonus du jour : termine les ${q.daily.length} quêtes</div><div class="qc-bar"><i style="width:${Math.floor(dailyClaimed / Math.max(1, q.daily.length) * 100)}%"></i></div><div class="qc-rw">${esc(rewardText(br))} · série ${br.streak} 🔥 (×${streakMult(br.streak).toFixed(1)} or)</div></div>${allDone ? `<button class="qc-claim" onclick="claimBonus()">Récupérer</button>` : `<div class="qc-state">${dailyClaimed} / ${q.daily.length}</div>`}</div>`;
-      const st = profileStats();
-      box.innerHTML = `<div class="q-head"><span>Quêtes du jour</span><small>Nouvelles dans ${untilText(tomorrow)}</small></div>
-        ${q.daily.map((x, i) => questCard(x, "d", i)).join("")}${bonus}
-        <div class="q-head"><span>Quêtes de la semaine</span><small>Nouvelles dans ${untilText(nextWeek)}</small></div>
-        ${q.weekly.map((x, i) => questCard(x, "w", i)).join("")}
-        <div class="q-head"><span>Combats de légendaires</span><small>${st.boss} victoire${st.boss > 1 ? "s" : ""}</small></div>
-        <div class="q-info">⚔️ Les poissons légendaires livrent un vrai combat : <b>Fureur</b> à 40 %, <b>Dernier souffle</b> à 75 %, et des <b>matraquages</b> où il faut taper vite sur le bouton.<br>Récompense : <b>or ×1,5</b>, <b>+50 XP</b> et des appâts rares. 3 victoires = titre « Dompteur de légendes » (${Math.min(3, st.boss)}/3).</div>`;
+      const nextWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (7 - ((now.getDay() + 6) % 7))).getTime();
+      const dc = claimable(q.daily) + (dayBonusReady(q) ? 1 : 0), wc = claimable(q.weekly) + (weekBonusReady(q) ? 1 : 0), total = claimable(q.daily) + claimable(q.weekly);
+      const tab = (id, label, n) => `<button class="q-tab ${qTab === id ? "active" : ""}" onclick="setQTab('${id}')">${label}${n ? `<i>${n}</i>` : ""}</button>`;
+      let html = `<div class="q-tabs">${tab("day", "Aujourd'hui", dc)}${tab("week", "Semaine", wc)}${tab("info", "Légendaires", 0)}</div>`;
+      if (total >= 2 && qTab !== "info") html += `<button class="q-all" onclick="claimAllQuests()">🎁 Tout récupérer (${total})</button>`;
+      if (qTab === "day") {
+        const dailyClaimed = q.daily.filter(x => x.claimed).length, br = bonusReward();
+        html += `<div class="q-head"><span>Quêtes du jour</span><small>Nouvelles dans ${untilText(tomorrow)}</small></div>
+          <div class="q-sub">🔄 Relance gratuite : <b>${Math.max(0, 1 - (q.rerolls || 0))}/1</b> · 🔥 Série : <b>${q.streak || 0} jour${(q.streak || 0) > 1 ? "s" : ""}</b></div>
+          ${q.daily.map((x, i) => questCard(x, "d", i, q)).join("")}
+          ${bonusCard("🎁", `Bonus du jour : termine les ${q.daily.length} quêtes`, dailyClaimed, q.daily.length, br, dayBonusReady(q), q.bonusClaimed, "claimBonus()", ` · série ${br.streak} 🔥 (×${streakMult(br.streak).toFixed(1)} or)`)}`;
+      } else if (qTab === "week") {
+        const weekClaimed = q.weekly.filter(x => x.claimed).length;
+        html += `<div class="q-head"><span>Quêtes de la semaine</span><small>Nouvelles dans ${untilText(nextWeek)}</small></div>
+          ${q.weekly.map((x, i) => questCard(x, "w", i, q)).join("")}
+          ${bonusCard("🏆", `Coffre de la semaine : termine les ${q.weekly.length} quêtes`, weekClaimed, q.weekly.length, weekBonusRewardOf(), weekBonusReady(q), q.weekBonusClaimed, "claimWeekBonus()", "")}`;
+      } else {
+        html += `<div class="q-head"><span>Combats de légendaires</span><small>${st.boss} victoire${st.boss > 1 ? "s" : ""}</small></div>
+          <div class="q-info">⚔️ Les poissons légendaires livrent un vrai combat : <b>Fureur</b> à 40 %, <b>Dernier souffle</b> à 75 %, et des <b>matraquages</b> où il faut taper vite sur le bouton.<br>Récompense : <b>or ×1,5</b>, <b>+50 XP</b> et des appâts rares.</div>
+          <div class="q-head"><span>Titres à gagner</span></div>
+          <div class="qcard"><div class="qc-ic">🏅</div><div class="qc-main"><div class="qc-txt">Dompteur de légendes</div><div class="qc-bar"><i style="width:${Math.min(100, Math.floor(st.boss / 3 * 100))}%"></i></div><div class="qc-rw">${Math.min(3, st.boss)} / 3 combats gagnés</div></div></div>
+          <div class="qcard"><div class="qc-ic">🎯</div><div class="qc-main"><div class="qc-txt">Chasseur de quêtes</div><div class="qc-bar"><i style="width:${Math.min(100, Math.floor(st.quests / 15 * 100))}%"></i></div><div class="qc-rw">${Math.min(15, st.quests)} / 15 quêtes terminées</div></div></div>`;
+      }
+      box.innerHTML = html;
     }
     (function () {
       const m = document.getElementById("quests-modal"), b = document.getElementById("quests-btn");
-      if (b) b.onclick = () => { ensureQuests(); renderQuests(); m.classList.add("active"); playSound("ui"); };
+      const open = () => { ensureQuests(); renderQuests(); m.classList.add("active"); playSound("ui"); };
+      if (b) b.onclick = open;
+      const chip = document.getElementById("quest-chip"); if (chip) { chip.onclick = open; chip.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } }; }
       const c = document.getElementById("close-quests"); if (c) c.onclick = () => m.classList.remove("active");
       setInterval(refreshQuestBadge, 60000);
     })();
@@ -1813,7 +1913,7 @@
       return { catches, record, night, legend, species: Object.keys(state.caughtFish).length, spots: Object.keys(state.unlockedSpots).length, boss: state.stats.bossWins, quests: state.stats.questsDone };
     }
 
-    const APP_VERSION = "1.0.15";   // garde le même numéro que VERSION dans sw.js
+    const APP_VERSION = "1.0.14";   // garde le même numéro que VERSION dans sw.js
     let deferredInstall = null;
     window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstall = e; });
     window.addEventListener("appinstalled", () => { deferredInstall = null; });
