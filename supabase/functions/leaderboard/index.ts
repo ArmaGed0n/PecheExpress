@@ -21,7 +21,9 @@ const FRAMES = ["bois", "acier", "or", "bois_orne", "acier_orne", "or_orne"];
 const BANNERS = ["lac", "riviere", "recif", "glace", "mer", "abysse"];
 const TITLE_IDS = ["none", "first", "vet", "collec", "night", "legend", "explo", "boss", "quests"];
 function cleanProfile(input) {
-  const p = input && typeof input === "object" && !Array.isArray(input) ? input : {};
+  let src = input;
+  if (typeof src === "string") { try { src = JSON.parse(src); } catch { src = {}; } }   // ancien profil stocké en texte JSON
+  const p = src && typeof src === "object" && !Array.isArray(src) ? src : {};
   const favFish = FISH_RANGES[p.favFish] ? String(p.favFish) : "";
   const cm = Number(p.favFishCm);
   const range = favFish ? FISH_RANGES[favFish] : null;
@@ -109,10 +111,10 @@ async function updateProfile(sql, body) {
   const playerId = String(body.playerId || "");
   if (!PLAYER_ID_RE.test(playerId)) return json({ error: "Identifiant joueur invalide." }, 400);
   const pseudo = cleanPseudo(body.pseudo);
-  const profile = JSON.stringify(cleanProfile(body.profile));
+  const profile = cleanProfile(body.profile);
   const result = await sql`
     WITH upd AS (
-      UPDATE leaderboard_players SET pseudo = ${pseudo}, profile = ${profile}::jsonb, profile_updated_at = now(), updated_at = now()
+      UPDATE leaderboard_players SET pseudo = ${pseudo}, profile = ${sql.json(profile)}, profile_updated_at = now(), updated_at = now()
       WHERE id = ${playerId}::uuid AND (profile_updated_at IS NULL OR profile_updated_at <= now() - interval '2 seconds')
       RETURNING id, public_id
     ), wk AS (
