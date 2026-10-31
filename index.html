@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Pêche Express</title>
   <meta name="theme-color" content="#080d1a">
-  <meta name="app-version" content="1.0.14">
+  <meta name="app-version" content="1.0.15">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -232,13 +232,22 @@
         <button class="btn-main" id="catch-ok-btn">CONTINUER LA PÊCHE</button>
       </div>
     </div>
+    <nav id="mobile-nav" aria-label="Navigation principale">
+      <button type="button" class="mobile-nav-item active" data-nav="home" aria-label="Accueil"><span>⌂</span><small>Accueil</small></button>
+      <button type="button" class="mobile-nav-item" data-nav="fish" aria-label="Pêche"><span>🎣</span><small>Pêche</small></button>
+      <button type="button" class="mobile-nav-item" data-nav="ranking" aria-label="Classement"><span>🏆</span><small>Classement</small></button>
+      <button type="button" class="mobile-nav-item" data-nav="shop" aria-label="Boutique"><span>🏪</span><small>Boutique</small></button>
+      <button type="button" class="mobile-nav-item" data-nav="profile" aria-label="Profil"><span>👤</span><small>Profil</small></button>
+    </nav>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/performance.js" defer></script>
   <script src="js/sprites.js" defer></script>
   <script src="js/game.js" defer></script>
   <script src="js/leaderboard.js" defer></script>
+  <script src="js/mobile-ui.js" defer></script>
 <div id="update-banner"><div class="ub-top"><span id="ub-title">🎣 Nouvelle version disponible !</span><button id="update-btn">Mettre à jour</button></div><ul id="ub-notes"></ul></div>
 <script src="js/changelog.js" defer></script>
 <script src="js/pwa.js" defer></script>
