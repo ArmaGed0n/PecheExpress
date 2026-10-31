@@ -493,7 +493,6 @@
     }
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
-    document.addEventListener("visibilitychange", () => { if (!document.hidden) { lastTick = performance.now(); requestAnimationFrame(render); } });
 
     /* Visual Background Assets */
     let waveOffset = 0;
@@ -503,8 +502,6 @@
 
     /* Main Render Loop */
     function render() {
-      if (document.hidden) return;
-      if (window.pePerfShouldRenderFrame && !window.pePerfShouldRenderFrame()) { requestAnimationFrame(render); return; }
       waveOffset += 0.025;
       const nowT = performance.now(); dayClock = (dayClock + Math.min(100, nowT - lastTick) / DAY_MS) % 1; lastTick = nowT; updateChips();
       const w = canvas.width; const h = canvas.height;
@@ -1057,7 +1054,6 @@
     }
 
     function gameLoop() {
-      if (document.hidden) return;
       if (state.phase === "POWER") {
         const castLevel = SKILL_UPGRADES.find(s => s.id === "cast_bar").level;
         const speedMultiplier = Math.max(0.3, 1 - (castLevel - 1) * 0.12);
@@ -1917,7 +1913,7 @@
       return { catches, record, night, legend, species: Object.keys(state.caughtFish).length, spots: Object.keys(state.unlockedSpots).length, boss: state.stats.bossWins, quests: state.stats.questsDone };
     }
 
-    const APP_VERSION = "1.0.15";   // garde le même numéro que VERSION dans sw.js
+    const APP_VERSION = "1.0.14";   // garde le même numéro que VERSION dans sw.js
     let deferredInstall = null;
     window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstall = e; });
     window.addEventListener("appinstalled", () => { deferredInstall = null; });
@@ -2057,17 +2053,7 @@
         const install = standalone ? `<div class="inv-note">Application installée ✓</div>`
           : deferredInstall ? `<button class="set-toggle" onclick="installApp()"><span>Installer l'application</span><b style="color:#06d6a0;font-size:20px">＋</b></button>`
           : `<div class="inv-note">Pour installer : ${ios ? "Safari › Partager › Sur l'écran d'accueil" : "menu du navigateur › Installer l'application"}</div>`;
-        const perfMode = window.peGetPerformanceMode ? window.peGetPerformanceMode() : "balanced";
-        body = `<div class="pf-sec">Performances & batterie</div>
-          <div class="perf-choice-row" role="group" aria-label="Mode de performances">
-            <button type="button" class="perf-choice ${perfMode === "performance" ? "active" : ""}" onclick="setPePerformanceMode('performance')"><b>⚡</b>Performance<small>60 FPS max.</small></button>
-            <button type="button" class="perf-choice ${perfMode === "balanced" ? "active" : ""}" onclick="setPePerformanceMode('balanced')"><b>⚖️</b>Équilibré<small>30 FPS max.</small></button>
-            <button type="button" class="perf-choice ${perfMode === "economy" ? "active" : ""}" onclick="setPePerformanceMode('economy')"><b>🔋</b>Économie<small>15 FPS max.</small></button>
-          </div>
-          <p class="perf-help">Les FPS sont des plafonds de rendu visés. Le navigateur et l'écran gardent le contrôle. Le mode Économie réduit aussi les animations et les effets visuels.</p>
-          <button class="set-toggle ${window.peIsAutoPerformance && window.peIsAutoPerformance() ? "on" : ""}" onclick="togglePeAutoPerformance()"><span>Mode intelligent (selon l'activité)</span><i></i></button>
-          <button class="set-toggle ${window.peIsReducedMotion && window.peIsReducedMotion() ? "on" : ""}" onclick="togglePeReducedMotion()"><span>Réduire les animations</span><i></i></button>
-          <div class="pf-sec">Son</div>${row("sfx", "Effets sonores", "splash")}${row("music", "Musique")}${row("amb", "Ambiance du spot")}
+        body = `<div class="pf-sec">Son</div>${row("sfx", "Effets sonores", "splash")}${row("music", "Musique")}${row("amb", "Ambiance du spot")}
           <button class="set-toggle ${AUD.vib ? "on" : ""}" onclick="toggleVib()"><span>Vibrations</span><i></i></button>
           <div class="pf-sec">Écouter</div>
           <div class="set-tests">${[["cast", "Lancer"], ["bite", "Touche"], ["win", "Prise"], ["rare", "Rare"], ["legend", "Légendaire"], ["levelup", "Niveau"]].map(x => `<button onclick="testSnd('${x[0]}')">${x[1]}</button>`).join("")}</div>

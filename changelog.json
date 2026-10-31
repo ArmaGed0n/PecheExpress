@@ -1,15 +1,5 @@
 [
   {
-    "version": "1.0.15",
-    "date": "30/10/2026",
-    "notes": [
-      "Nouvelle navigation mobile fixe : Accueil, Pêche, Classement, Boutique et Profil.",
-      "Nouveaux modes de performances : Performance, Équilibré et Économie avec limitation du rendu du canvas.",
-      "Mode Économie : animations et effets visuels réduits pour limiter le travail graphique.",
-      "Le rendu et la boucle de jeu se mettent en pause lorsque l'application passe en arrière-plan."
-    ]
-  },
-  {
     "version": "1.0.14",
     "date": "30/10/2026",
     "notes": [
