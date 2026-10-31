@@ -44,7 +44,6 @@
     <div id="info-chips">
       <div class="info-chip" id="time-chip">🌅 Aube</div>
       <div class="info-chip" id="spot-chip">📍 Lac Tranquille</div>
-      <div class="info-chip quest-chip" id="quest-chip" role="button" tabindex="0" hidden></div>
     </div>
 
     <div id="canvas-container">
@@ -58,18 +57,6 @@
     </div>
 
     <button class="icon-btn bag-btn" id="skins-btn" title="Inventaire" aria-label="Inventaire"><img id="bag-img" data-sprite="bag" alt="Inventaire"></button>
-
-    <!-- Écran d'accueil (tableau de bord) -->
-    <div id="home-screen" aria-label="Accueil"></div>
-
-    <!-- Barre de navigation fixe -->
-    <nav id="nav-bar" aria-label="Navigation principale">
-      <button class="nav-item active" data-nav="home" type="button"><img data-sprite="icon_home" alt=""><span>Accueil</span></button>
-      <button class="nav-item" data-nav="fish" type="button"><img data-sprite="icon_hook" alt=""><span>Pêche</span></button>
-      <button class="nav-item" data-nav="rank" type="button"><img data-sprite="icon_trophy" alt=""><span>Classement</span></button>
-      <button class="nav-item" data-nav="shop" type="button"><img data-sprite="icon_shop" alt=""><span>Boutique</span></button>
-      <button class="nav-item" data-nav="profile" type="button"><img data-sprite="icon_profile" alt=""><span>Profil</span></button>
-    </nav>
 
     <!-- Modale Quêtes -->
     <div class="modal" id="quests-modal" role="dialog" aria-modal="true" aria-labelledby="quests-title">
@@ -101,12 +88,23 @@
     <!-- Modale Niveau & Expérience + Améliorations -->
     <div class="modal" id="level-modal">
       <div class="modal-header">
-        <div class="modal-title"><img class="title-ic" data-sprite="icon_skills" alt=""> Progression &amp; Maîtrise</div>
-        <button class="close-btn" id="close-level" aria-label="Fermer">&times;</button>
+        <div class="modal-title">⚡ Progression & Maîtrise</div>
+        <button class="close-btn" id="close-level">&times;</button>
       </div>
       <div class="modal-body">
-        <div id="level-summary"></div>
-        <div class="q-head"><span>Compétences</span><small>Améliore-les avec ton or</small></div>
+        <div class="fish-card" style="max-width: 100%; padding: 18px; background: rgba(18, 32, 54, 0.8);">
+          <div style="font-size: 15px; font-weight: 900; color: #ffd166;">NIVEAU ACTUEL : <span id="modal-lvl">1</span></div>
+          <div class="xp-container">
+            <div class="xp-header">
+              <span>EXPÉRIENCE GLOBALE</span>
+              <span id="modal-xp-text">0 / 50 XP</span>
+            </div>
+            <div class="xp-bar-bg">
+              <div class="xp-bar-fill" id="modal-xp-bar"></div>
+            </div>
+          </div>
+        </div>
+        <p style="font-size: 12px; color: #8d99ae; font-weight: 700; margin-top: 4px;">Améliorer vos compétences :</p>
         <div id="level-items" style="display: flex; flex-direction: column; gap: 10px;"></div>
       </div>
     </div>
@@ -251,7 +249,6 @@
   <script src="js/sprites.js" defer></script>
   <script src="js/game.js" defer></script>
   <script src="js/leaderboard.js" defer></script>
-  <script src="js/home.js" defer></script>
 <div id="update-banner"><div class="ub-top"><span id="ub-title">🎣 Nouvelle version disponible !</span><button id="update-btn">Mettre à jour</button></div><ul id="ub-notes"></ul></div>
 <script src="js/changelog.js" defer></script>
 <script src="js/pwa.js" defer></script>

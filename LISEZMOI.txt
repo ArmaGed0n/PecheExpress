@@ -54,7 +54,7 @@ que les fichiers du jeu sont sur GitHub Pages.
 
 4) FAIRE UNE MISE À JOUR DU JEU
    a) Modifie les fichiers du jeu.
-   b) Dans sw.js change le numéro : const VERSION = "1.0.14";  (nouveau numéro à chaque fois). Mets le MÊME numéro dans js/game.js
+   b) Dans sw.js change le numéro : const VERSION = "1.0.15";  (nouveau numéro à chaque fois). Mets le MÊME numéro dans js/game.js
       (APP_VERSION) et dans index.html (balise app-version).
    c) Dans changelog.json AJOUTE EN HAUT une entrée (version, date, notes). Elle s'affiche dans « Nouvelle version disponible »
       et dans « Nouveautés ».
@@ -90,12 +90,3 @@ JEU : NOUVEAUTÉS RÉCENTES
    1.0.11 Bandeau joueur en haut (avatar, pseudo, grade, niveau, argent) qui ouvre le profil + carte de profil refaite.
    1.0.12 Classement migré de Netlify + Neon vers Supabase.
    1.0.13 Transfert de sauvegarde (export / import) + hébergement GitHub Pages.
-   1.0.14 Quêtes refaites (onglets, défi du jour, relance, tout récupérer, coffre de la semaine, quête suivie à l'écran),
-          menu Compétences refait (+ Œil de Lynx et Négociant), finition des menus.
-          Réglages des quêtes : QUEST_NEED (objectifs) et mkQuest / genChallenge (récompenses) dans js/game.js.
-          Si tu as déjà déployé la fonction Supabase corrigée (profil), rien à refaire côté serveur.
-   1.0.15 Écran d'accueil (profil, spot actuel, « Aller pêcher », raccourcis, quêtes, dernière prise, top 3 du classement)
-          + barre de navigation fixe en bas : Accueil · Pêche · Classement · Boutique · Profil (cachée pendant les combats).
-          Fichiers : js/home.js (nouveau, suivi par sw.js et js/pwa.js) et les icônes icon_home / icon_hook dans js/sprites.js.
-          Le top 3 utilise la même adresse Supabase que le classement (js/config.js).
-          Nettoyage conseillé du dépôt GitHub : supprime netlify.toml, package.json et _headers (inutiles sur GitHub Pages).

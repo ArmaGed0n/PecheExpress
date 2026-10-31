@@ -1,21 +1,18 @@
 [
   {
     "version": "1.0.15",
-    "date": "30/10/2026",
+    "date": "29/10/2026",
     "notes": [
-      "Nouvel écran d'accueil : ton profil, le spot actuel, un bouton « Aller pêcher », des raccourcis (Mes prises, Mon équipement, Classement, Boutique), tes quêtes, ta dernière prise et le top 3 du classement.",
-      "Nouvelle barre de navigation fixe en bas de l'écran : Accueil, Pêche, Classement, Boutique et Profil. Elle se cache pendant les combats."
+      "Configuration du classement en ligne avec l’adresse de la fonction Supabase leaderboard.",
+      "Conserve la correction du bandeau de mise à jour répétitif sur GitHub Pages."
     ]
   },
   {
     "version": "1.0.14",
-    "date": "30/10/2026",
+    "date": "29/10/2026",
     "notes": [
-      "Quêtes refaites : onglets Aujourd'hui / Semaine / Légendaires, un défi du jour plus rentable, une relance gratuite par jour et un bouton « Tout récupérer ».",
-      "Nouveaux objectifs : poisson précis, poissons épiques, esquives en combat. Un coffre bonus récompense aussi la semaine complète.",
-      "La quête la plus avancée s'affiche sur l'écran de pêche ; touche-la pour ouvrir les quêtes.",
-      "Menu Compétences refait, avec deux nouvelles compétences : Œil de Lynx (plus de poissons rares) et Négociant (plus d'or par prise).",
-      "Menus plus agréables : ouverture animée, bouton de fermeture plus grand et messages qui ne cachent plus les onglets."
+      "Correction du bandeau de mise à jour répétitif sur GitHub Pages : comparaison du contenu réel des fichiers plutôt que des en-têtes HTTP.",
+      "Le classement Supabase nécessite toujours l'adresse de la fonction dans js/config.js."
     ]
   },
   {
