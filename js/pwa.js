@@ -7,7 +7,7 @@ if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
   window.addEventListener("load", function () {
     var banner = document.getElementById("update-banner"), pendingSig = null;
     // MÊME liste que SIG_FILES dans sw.js
-    var SIG_FILES = ["index.html", "css/style.css", "js/config.js", "js/sprites.js", "js/game.js", "js/leaderboard.js", "js/changelog.js", "js/pwa.js"];
+    var SIG_FILES = ["index.html", "css/style.css", "js/config.js", "js/sprites.js", "js/game.js", "js/leaderboard.js", "js/home.js", "js/changelog.js", "js/pwa.js"];
     var showBanner = function () { banner.classList.add("show"); if (window.fillUpdateNotes) fillUpdateNotes(); };
     var sigOf = function (r) { return r.headers.get("etag") || r.headers.get("last-modified") || r.headers.get("content-length") || ""; };
 

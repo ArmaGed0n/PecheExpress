@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Pêche Express</title>
   <meta name="theme-color" content="#080d1a">
-  <meta name="app-version" content="1.0.14">
+  <meta name="app-version" content="1.0.15">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -58,6 +58,18 @@
     </div>
 
     <button class="icon-btn bag-btn" id="skins-btn" title="Inventaire" aria-label="Inventaire"><img id="bag-img" data-sprite="bag" alt="Inventaire"></button>
+
+    <!-- Écran d'accueil (tableau de bord) -->
+    <div id="home-screen" aria-label="Accueil"></div>
+
+    <!-- Barre de navigation fixe -->
+    <nav id="nav-bar" aria-label="Navigation principale">
+      <button class="nav-item active" data-nav="home" type="button"><img data-sprite="icon_home" alt=""><span>Accueil</span></button>
+      <button class="nav-item" data-nav="fish" type="button"><img data-sprite="icon_hook" alt=""><span>Pêche</span></button>
+      <button class="nav-item" data-nav="rank" type="button"><img data-sprite="icon_trophy" alt=""><span>Classement</span></button>
+      <button class="nav-item" data-nav="shop" type="button"><img data-sprite="icon_shop" alt=""><span>Boutique</span></button>
+      <button class="nav-item" data-nav="profile" type="button"><img data-sprite="icon_profile" alt=""><span>Profil</span></button>
+    </nav>
 
     <!-- Modale Quêtes -->
     <div class="modal" id="quests-modal" role="dialog" aria-modal="true" aria-labelledby="quests-title">
@@ -239,6 +251,7 @@
   <script src="js/sprites.js" defer></script>
   <script src="js/game.js" defer></script>
   <script src="js/leaderboard.js" defer></script>
+  <script src="js/home.js" defer></script>
 <div id="update-banner"><div class="ub-top"><span id="ub-title">🎣 Nouvelle version disponible !</span><button id="update-btn">Mettre à jour</button></div><ul id="ub-notes"></ul></div>
 <script src="js/changelog.js" defer></script>
 <script src="js/pwa.js" defer></script>

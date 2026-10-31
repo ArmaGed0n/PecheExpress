@@ -2,7 +2,7 @@
 (() => {
   "use strict";
   const API = String(window.PECHE_EXPRESS_API || "").trim().replace(/\/+$/, "");
-  const API_OK = /^https:\/\/[a-z0-9.-]+\/functions\/v1\/[a-z0-9_-]+$/i.test(API);
+  const API_OK = /^https:\/\/[a-z0-9.-]+\/functions\/v1\/leaderboard$/i.test(API);   // adresse de la fonction Supabase (voir js/config.js)
   const NOT_CONFIGURED = "Le classement en ligne n'est pas encore configuré (adresse Supabase manquante dans js/config.js).";
   const PLAYER_KEY = "peche_express_leaderboard_player_v1";
   const PSEUDO_KEY = "peche_express_leaderboard_pseudo_v1";

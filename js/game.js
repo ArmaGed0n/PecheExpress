@@ -129,6 +129,7 @@
       equippedSkins: { character: "char_classic", rod: "rod_wood", lure: "lure_classic", boat: "boat_classic" },
       profile: { avatar: "", frame: "bois", banner: "lac", badge: -1, favFish: "" },
       stats: { bossWins: 0, questsDone: 0 },
+      lastCatch: null,
       quests: null,
       boss: null,
       caughtFish: {},
@@ -173,6 +174,7 @@
         title: typeof state.title === "string" ? state.title.slice(0, 64) : "",
         profile: state.profile,
         stats: state.stats,
+        lastCatch: state.lastCatch,
         quests: state.quests,
         baits: state.baits,
         activeBait: state.activeBait,
@@ -284,6 +286,10 @@
           }
           if (isPlainObject(data.stats)) {
             state.stats = { bossWins: Math.floor(clampNumber(data.stats.bossWins, 0, 0, 1000000)), questsDone: Math.floor(clampNumber(data.stats.questsDone, 0, 0, 1000000)) };
+          }
+          if (isPlainObject(data.lastCatch) && typeof data.lastCatch.id === "string" && SPECIES.some(f => f.id === data.lastCatch.id)) {
+            const lc = data.lastCatch;
+            state.lastCatch = { id: lc.id, w: Math.floor(clampNumber(lc.w, 0, 0, 100000)), xp: Math.floor(clampNumber(lc.xp, 0, 0, 100000)), gold: Math.floor(clampNumber(lc.gold, 0, 0, 100000000)), boss: !!lc.boss };
           }
           if (isPlainObject(data.quests)) state.quests = sanitizeQuests(data.quests);
           if (isPlainObject(data.profile)) {
@@ -1201,6 +1207,7 @@
       let leveled = false;
       while (state.xp >= state.level * 50) { state.xp -= state.level * 50; state.level += 1; leveled = true; }
       if (leveled) setTimeout(() => playSound("levelup"), 900);
+      state.lastCatch = { id: fish.id, w: Math.floor(weight), xp: 25 + (boss ? 50 : 0), gold: earnedGold, boss: !!boss };
       questEvent({ fish, weight, gold: earnedGold, period: currentTimePeriod, spot: state.spot, boss: !!boss });
       state.boss = null;
 
@@ -1913,7 +1920,7 @@
       return { catches, record, night, legend, species: Object.keys(state.caughtFish).length, spots: Object.keys(state.unlockedSpots).length, boss: state.stats.bossWins, quests: state.stats.questsDone };
     }
 
-    const APP_VERSION = "1.0.14";   // garde le même numéro que VERSION dans sw.js
+    const APP_VERSION = "1.0.15";   // garde le même numéro que VERSION dans sw.js
     let deferredInstall = null;
     window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstall = e; });
     window.addEventListener("appinstalled", () => { deferredInstall = null; });
