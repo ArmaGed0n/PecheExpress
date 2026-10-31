@@ -1,7 +1,7 @@
 /* Service worker de Pêche Express.
    >>> À CHAQUE MISE À JOUR : change le numéro de VERSION ci-dessous (ex. 1.0.4). <<<
    (Même si tu l'oublies, le jeu détecte tout de même les fichiers modifiés grâce à la « signature » ci-dessous.) */
-const VERSION = "1.0.15";
+const VERSION = "1.0.16";
 const CACHE = "peche-express-" + VERSION;
 // fichiers indispensables : si l'un manque, la nouvelle version n'est PAS installée (l'ancienne continue de marcher)
 const CORE = ["./", "./index.html", "./css/style.css", "./js/config.js", "./js/sprites.js", "./js/game.js", "./js/leaderboard.js", "./js/changelog.js", "./js/pwa.js", "./manifest.webmanifest", "./changelog.json"];

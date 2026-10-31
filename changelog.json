@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.0.16",
+    "date": "31/10/2026",
+    "notes": [
+      "Nettoyage du projet : suppression des fichiers inutilisés et des restes de l'ancien hébergement.",
+      "Chargement un peu plus rapide au démarrage de l'écran de jeu."
+    ]
+  },
+  {
     "version": "1.0.15",
     "date": "29/10/2026",
     "notes": [
