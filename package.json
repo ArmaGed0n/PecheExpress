@@ -1,0 +1,11 @@
+{
+  "name": "peche-express-netlify",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.2"
+  },
+  "version": "1.0.16"
+}

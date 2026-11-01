@@ -1,0 +1,7 @@
+# Pêche Express — configuration Supabase (CLI)
+# Le joueur est identifié par un identifiant anonyme généré sur son appareil, sans compte Supabase :
+# la fonction est donc publique (pas de vérification JWT). La base reste protégée (RLS activée, aucun accès direct).
+project_id = "peche-express"
+
+[functions.leaderboard]
+verify_jwt = false
