@@ -650,7 +650,8 @@
     const BOAT_GLOW = {
       boat_classic: { x: -38, y: -18.8, c: "255, 214, 120" }, boat_viking: { x: -34, y: -20, c: "255, 140, 50" },
       boat_pirate: { x: -38, y: -18.8, c: "255, 150, 90" }, boat_neon: { x: -46, y: -10.6, c: "60, 255, 220" },
-      boat_gold: { x: -38, y: -18.8, c: "255, 235, 160" }
+      boat_gold: { x: -38, y: -18.8, c: "255, 235, 160" },
+      boat_fantome: { x: -38.5, y: -22, c: "110, 255, 225" }
     };
     function spriteOK(im) { return im && im.complete && im.naturalWidth > 0; }
 
@@ -1292,54 +1293,6 @@
       resetState();
     };
 
-    function renderProfileOld() {
-      let currentRank = RANKS[0];
-      RANKS.forEach(r => { if (state.level >= r.minLvl) currentRank = r; });
-
-      let totalCatches = 0;
-      let maxRecordOverall = 0;
-      let uniqueCaught = Object.keys(state.caughtFish).length;
-
-      Object.values(state.caughtFish).forEach(rec => {
-        totalCatches += rec.count;
-        if (rec.maxWeight > maxRecordOverall) maxRecordOverall = rec.maxWeight;
-      });
-
-      const container = document.getElementById("profile-content");
-      container.innerHTML = `
-        <div class="detail-card" style="align-items: center; text-align: center;">
-          <div style="font-size: 60px; margin-bottom: 4px;">🎣</div>
-          <div class="detail-fish-title">PÊCHEUR EXPERT</div>
-          <div class="badge-group">
-            <span class="badge" style="background: ${currentRank.color}; color: #0b131e;">${currentRank.name}</span>
-            <span class="badge badge-count">NIVEAU ${state.level}</span>
-          </div>
-        </div>
-
-        <div class="stats-grid">
-          <div class="stat-tile">
-            <span class="stat-tile-lbl">ESPÈCES</span>
-            <span class="stat-tile-val">${uniqueCaught} / ${SPECIES.length}</span>
-          </div>
-          <div class="stat-tile">
-            <span class="stat-tile-lbl">TOTAL PRISES</span>
-            <span class="stat-tile-val">${totalCatches}</span>
-          </div>
-          <div class="stat-tile">
-            <span class="stat-tile-lbl">RECORD MAX</span>
-            <span class="stat-tile-val">${maxRecordOverall} CM</span>
-          </div>
-        </div>
-
-        <div class="shop-item">
-          <div class="shop-item-info">
-            <h4>Trésor Accumulé</h4>
-            <p>Pièces d'or gagnées au total</p>
-          </div>
-          <div style="font-size: 18px; font-weight: 900; color: var(--accent-gold);">🪙 ${state.gold}</div>
-        </div>
-      `;
-    }
 
     function setDexFilter(filter, evt) {
       state.dexFilter = filter;
@@ -1480,7 +1433,7 @@
       fishDetailModal.classList.add("active");
     }
 
-    function renderShop() {
+    function renderUpgradeItems() {
       const container = document.getElementById("shop-items"); container.innerHTML = "";
       UPGRADES.forEach((up, idx) => {
         const cost = Math.floor(up.basePrice * Math.pow(up.mult, up.level - 1));
@@ -1492,7 +1445,7 @@
 
     window.buyUpgrade = function(index) {
       const up = UPGRADES[index]; const cost = Math.floor(up.basePrice * Math.pow(up.mult, up.level - 1));
-      if (state.gold >= cost) { state.gold -= cost; up.level += 1; saveGame(); updateHUD(); renderShop(); }
+      if (state.gold >= cost) { state.gold -= cost; up.level += 1; saveGame(); updateHUD(); renderUpgradeItems(); }
     };
 
     function renderLevelUpgrades() {
@@ -1510,17 +1463,6 @@
       if (state.gold >= cost) { state.gold -= cost; up.level += 1; saveGame(); updateHUD(); renderLevelUpgrades(); }
     };
 
-    function renderSkins() {
-      const container = document.getElementById("skins-items"); container.innerHTML = "";
-      Object.keys(SKINS).forEach(cat => {
-        SKINS[cat].forEach(s => {
-          const isEquipped = state.equippedSkins[cat] === s.id;
-          const div = document.createElement("div"); div.className = "shop-item";
-          div.innerHTML = `<div class="shop-item-info"><h4>${s.name}</h4><p>${s.unlocked ? (isEquipped ? "Équipé" : "Débloqué") : "Verrouillé"}</p></div><button class="buy-btn ${isEquipped ? 'equipped' : ''}" onclick="selectSkin('${cat}', '${s.id}')">${isEquipped ? 'ÉQUIPÉ' : (s.unlocked ? 'ÉQUIPER' : s.price + ' 🪙')}</button>`;
-          container.appendChild(div);
-        });
-      });
-    }
 
     window.selectSkin = function(cat, id) {
       const skin = SKINS[cat].find(s => s.id === id);
@@ -1813,7 +1755,7 @@
       return { catches, record, night, legend, species: Object.keys(state.caughtFish).length, spots: Object.keys(state.unlockedSpots).length, boss: state.stats.bossWins, quests: state.stats.questsDone };
     }
 
-    const APP_VERSION = "1.0.16";   // garde le même numéro que VERSION dans sw.js
+    const APP_VERSION = "1.0.18";   // garde le même numéro que VERSION dans sw.js
     let deferredInstall = null;
     window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstall = e; });
     window.addEventListener("appinstalled", () => { deferredInstall = null; });
@@ -2019,6 +1961,23 @@
     SKINS.character.push({ id: "char_marin", name: "Pêcheur Marin", price: 0, unlocked: false });
     SKINS.rod.push({ id: "rod_bamboo", name: "Canne Bambou", price: 0, unlocked: false, color: "#c9a66b" });
     SKINS.lure.push({ id: "lure_spoon", name: "Cuillère", price: 0, unlocked: false });
+    SKINS.boat.push(
+      { id: "boat_kayak", name: "Kayak Rapide", price: 0, unlocked: false },
+      { id: "boat_chalutier", name: "Chalutier Rouge", price: 0, unlocked: false },
+      { id: "boat_voilier", name: "Voilier Azur", price: 0, unlocked: false },
+      { id: "boat_fantome", name: "Vaisseau Fantôme", price: 0, unlocked: false }
+    );
+    SKINS.rod.push(
+      { id: "rod_fibre", name: "Canne Fibre Verte", price: 0, unlocked: false, color: "#78d246" },
+      { id: "rod_titane", name: "Canne Titane", price: 0, unlocked: false, color: "#c8d2e0" },
+      { id: "rod_cristal", name: "Canne Cristal de Glace", price: 0, unlocked: false, color: "#bdebff" },
+      { id: "rod_magma", name: "Canne Magma", price: 0, unlocked: false, color: "#ff6e14" }
+    );
+    SKINS.lure.push(
+      { id: "lure_mouche", name: "Mouche Artificielle", price: 0, unlocked: false },
+      { id: "lure_crevette", name: "Crevette Rose", price: 0, unlocked: false },
+      { id: "lure_meduse", name: "Méduse Lumineuse", price: 0, unlocked: false }
+    );
     const ITEM_META = {
       char_classic: { r: "commune", e: "🧑‍🎣", color: "#06d6a0" }, char_marin: { r: "commune", e: "⚓", color: "#118ab2" },
       char_pirate: { r: "rare", e: "🏴‍☠️", color: "#ef476f" }, char_cyber: { r: "legendaire", e: "🤖", color: "#8338ec" },
@@ -2030,6 +1989,14 @@
     Object.assign(ITEM_META, {
       boat_classic: { r: "commune", e: "🛶" }, boat_pneu: { r: "commune", e: "🚤" }, boat_viking: { r: "rare", e: "🐉" },
       boat_pirate: { r: "rare", e: "🏴‍☠️" }, boat_neon: { r: "legendaire", e: "⚡" }, boat_gold: { r: "legendaire", e: "🛥️" }
+    });
+    Object.assign(ITEM_META, {
+      boat_kayak: { r: "commune", e: "🛶" }, boat_chalutier: { r: "rare", e: "🚢" },
+      boat_voilier: { r: "rare", e: "⛵" }, boat_fantome: { r: "legendaire", e: "👻" },
+      rod_fibre: { r: "commune", e: "🎣", bonus: 0.03 }, rod_titane: { r: "rare", e: "🎣", bonus: 0.07 },
+      rod_cristal: { r: "rare", e: "❄️", bonus: 0.08 }, rod_magma: { r: "legendaire", e: "🔥", bonus: 0.11 },
+      lure_mouche: { r: "commune", e: "🪰", gold: 1.08 }, lure_crevette: { r: "rare", e: "🦐", gold: 1.2 },
+      lure_meduse: { r: "legendaire", e: "🪼", gold: 1.35 }
     });
     Object.keys(SKINS).forEach(cat => SKINS[cat].forEach(s => {
       const m = ITEM_META[s.id]; if (!m) return;
