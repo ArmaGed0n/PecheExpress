@@ -1,5 +1,23 @@
 [
   {
+    "version": "1.0.18",
+    "date": "02/11/2026",
+    "notes": [
+      "Nouveaux bateaux : Kayak Rapide, Chalutier Rouge, Voilier Azur et Vaisseau Fantôme (lanterne spectrale).",
+      "Nouvelles cannes : Fibre Verte, Titane, Cristal de Glace et Magma (bonus d'or jusqu'à +11 %).",
+      "Nouveaux leurres : Mouche Artificielle, Crevette Rose et Méduse Lumineuse.",
+      "À gagner dans les caisses Bronze, Argent et Or."
+    ]
+  },
+  {
+    "version": "1.0.17",
+    "date": "02/11/2026",
+    "notes": [
+      "Nettoyage du projet : fichiers en double et scripts inutilisés supprimés, code mort retiré.",
+      "Aucun changement de gameplay : la progression est conservée."
+    ]
+  },
+  {
     "version": "1.0.16",
     "date": "01/11/2026",
     "notes": [
