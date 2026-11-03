@@ -1,3 +1,23 @@
+/* Plein écran sur mobile : masque la barre de navigation du téléphone (bande blanche).
+   Le navigateur exige un geste de l'utilisateur : on le demande au premier toucher (et si on en sort). */
+(function () {
+  var de = document.documentElement;
+  var req = de.requestFullscreen || de.webkitRequestFullscreen;
+  if (!req || !window.matchMedia || !matchMedia("(pointer: coarse)").matches) return;
+  var busy = false;
+  function isFull() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+  function inApp() { return matchMedia("(display-mode: fullscreen)").matches || matchMedia("(display-mode: standalone)").matches && window.innerHeight >= screen.height - 2; }
+  function go() {
+    if (busy || isFull() || inApp()) return; busy = true;
+    try {
+      var r = req.call(de, { navigationUI: "hide" });
+      if (r && r.then) r.then(function () { busy = false; }, function () { busy = false; }); else busy = false;
+    } catch (e) { busy = false; }
+  }
+  document.addEventListener("pointerup", go, true);
+  document.addEventListener("touchend", go, true);
+})();
+
 /* Installation + mises à jour (service worker) — actif seulement quand le jeu est hébergé en http(s).
    Double sécurité :
    (1) le navigateur détecte un nouveau sw.js (numéro VERSION changé) ;
