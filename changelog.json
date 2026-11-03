@@ -1,5 +1,20 @@
 [
   {
+    "version": "1.0.20",
+    "date": "02/11/2026",
+    "notes": [
+      "Plein écran sur mobile : la barre de navigation du téléphone (bande blanche) est masquée.",
+      "Version installée : réinstalle l'application sur l'écran d'accueil pour prendre en compte le mode plein écran."
+    ]
+  },
+  {
+    "version": "1.0.19",
+    "date": "02/11/2026",
+    "notes": [
+      "Nouvel écran de chargement avec barre de progression et astuces au démarrage."
+    ]
+  },
+  {
     "version": "1.0.18",
     "date": "02/11/2026",
     "notes": [

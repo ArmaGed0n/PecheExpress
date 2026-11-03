@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Pêche Express</title>
   <meta name="theme-color" content="#080d1a">
-  <meta name="app-version" content="1.0.18">
+  <meta name="app-version" content="1.0.20">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,6 +18,18 @@
   
 </head>
 <body>
+
+  <div id="loading-screen" role="status" aria-live="polite">
+    <svg class="ld-wave ld-wave-b" viewBox="0 0 1200 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40 Q150 0 300 40 T600 40 T900 40 T1200 40 V80 H0Z"/></svg>
+    <svg class="ld-wave ld-wave-a" viewBox="0 0 1200 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40 Q150 80 300 40 T600 40 T900 40 T1200 40 V80 H0Z"/></svg>
+    <div class="ld-center">
+      <img class="ld-logo" src="icons/icon-192.png" alt="" width="96" height="96">
+      <h1 class="ld-title">Pêche Express</h1>
+      <div class="ld-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i id="ld-fill"></i></div>
+      <p class="ld-tip" id="ld-tip">Chargement…</p>
+    </div>
+    <p class="ld-ver" id="ld-ver"></p>
+  </div>
 
   <div id="game-container">
     <div id="hud">
@@ -244,7 +256,43 @@
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <script>
+/* Écran de chargement : suit le chargement des images puis disparaît (sécurité : 10 s max). */
+(function () {
+  var el = document.getElementById("loading-screen"); if (!el) return;
+  var fill = document.getElementById("ld-fill"), tipEl = document.getElementById("ld-tip");
+  var m = document.querySelector('meta[name="app-version"]'), v = document.getElementById("ld-ver");
+  if (m && v) v.textContent = "v" + m.content;
+  var tips = [
+    "Certains poissons ne sortent que de jour ou de nuit.",
+    "Surveille la tension de la ligne pendant le combat.",
+    "Les caisses contiennent bateaux, cannes, leurres et appâts.",
+    "Un appât brillant ou doré augmente tes chances de poissons rares.",
+    "Pense aux quêtes du jour et de la semaine.",
+    "Ta progression est sauvegardée sur cet appareil."
+  ];
+  var ti = Math.floor(Math.random() * tips.length); tipEl.textContent = tips[ti];
+  var t0 = Date.now(), loaded = document.readyState === "complete", shown = 5, done = false;
+  window.addEventListener("load", function () { loaded = true; });
+  function setP(p) { shown = Math.max(shown, Math.min(100, p)); fill.style.width = shown + "%"; fill.parentNode.setAttribute("aria-valuenow", Math.round(shown)); }
+  function sprites() {
+    var S = window.SPRITES; if (!S) return { p: 0, ok: false };
+    var k = Object.keys(S), c = 0; for (var i = 0; i < k.length; i++) if (S[k[i]] && S[k[i]].complete) c++;
+    return { p: k.length ? c / k.length : 0, ok: k.length > 0 && c === k.length };
+  }
+  function finish() {
+    if (done) return; done = true; clearInterval(timer); clearInterval(tipTimer);
+    setP(100); setTimeout(function () { el.classList.add("ld-hide"); setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 600); }, 250);
+  }
+  var tipTimer = setInterval(function () { ti = (ti + 1) % tips.length; tipEl.textContent = tips[ti]; }, 2600);
+  var timer = setInterval(function () {
+    var s = sprites(), el_ = Date.now() - t0;
+    setP(10 + 80 * s.p + (loaded ? 10 : 0));
+    if ((loaded && s.ok && el_ > 900) || el_ > 10000) finish();
+  }, 80);
+})();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/sprites.js" defer></script>
   <script src="js/game.js" defer></script>

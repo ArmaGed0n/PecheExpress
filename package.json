@@ -1,6 +1,6 @@
 {
   "name": "peche-express",
   "private": true,
-  "version": "1.0.18",
+  "version": "1.0.20",
   "description": "Jeu de pêche mobile (site statique GitHub Pages + classement Supabase)"
 }
