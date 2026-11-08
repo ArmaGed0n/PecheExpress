@@ -1,5 +1,28 @@
 [
   {
+    "version": "1.0.23",
+    "date": "08/11/2026",
+    "notes": [
+      "iPhone : le son se débloque maintenant correctement au premier toucher.",
+      "Écrans 120 Hz (iPhone Pro, Pro Max) : l'affichage est limité à 60 images/s, les vagues et particules ne vont plus trop vite.",
+      "Fond sombre forcé autour du jeu et plein écran réservé au navigateur (pas dans l'application installée)."
+    ]
+  },
+  {
+    "version": "1.0.22",
+    "date": "02/11/2026",
+    "notes": [
+      "Application installée : le plein écran forcé par le navigateur est désactivé (cause de la bande blanche en haut)."
+    ]
+  },
+  {
+    "version": "1.0.21",
+    "date": "02/11/2026",
+    "notes": [
+      "Correction de la bande blanche en haut de l'écran : fond sombre forcé autour du jeu."
+    ]
+  },
+  {
     "version": "1.0.20",
     "date": "02/11/2026",
     "notes": [

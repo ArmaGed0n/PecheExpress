@@ -925,3 +925,8 @@ body.fighting #hud-card { opacity: 0; pointer-events: none; }
 @keyframes ld-bob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
 @keyframes ld-wave { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { #loading-screen .ld-logo, #loading-screen .ld-wave { animation: none; } }
+
+
+/* ===== Aucune bande blanche : tout ce que le système dessine autour du jeu reste sombre ===== */
+html { color-scheme: dark; background-color: #080d1a; }
+body { background-color: #080d1a; overscroll-behavior: none; }

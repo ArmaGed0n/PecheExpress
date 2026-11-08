@@ -1,14 +1,14 @@
 /* Plein écran sur mobile : masque la barre de navigation du téléphone (bande blanche).
-   Le navigateur exige un geste de l'utilisateur : on le demande au premier toucher (et si on en sort). */
+   Demandé au premier toucher, uniquement dans le navigateur (jamais dans l'application installée). */
 (function () {
   var de = document.documentElement;
   var req = de.requestFullscreen || de.webkitRequestFullscreen;
-  if (!req || !window.matchMedia || !matchMedia("(pointer: coarse)").matches) return;
+  /* Uniquement dans le navigateur : l'application installée gère son affichage via le manifest. */
+  if (!req || !window.matchMedia || !matchMedia("(pointer: coarse)").matches || !matchMedia("(display-mode: browser)").matches) return;
   var busy = false;
   function isFull() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
-  function inApp() { return matchMedia("(display-mode: fullscreen)").matches || matchMedia("(display-mode: standalone)").matches && window.innerHeight >= screen.height - 2; }
   function go() {
-    if (busy || isFull() || inApp()) return; busy = true;
+    if (busy || isFull()) return; busy = true;
     try {
       var r = req.call(de, { navigationUI: "hide" });
       if (r && r.then) r.then(function () { busy = false; }, function () { busy = false; }); else busy = false;

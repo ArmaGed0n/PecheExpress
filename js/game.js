@@ -1,3 +1,11 @@
+/* roundRect de secours pour les anciens navigateurs (iOS < 16) */
+if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    r = Math.min(Array.isArray(r) ? (r[0] || 0) : (r || 0), Math.abs(w) / 2, Math.abs(h) / 2);
+    this.moveTo(x + r, y); this.arcTo(x + w, y, x + w, y + h, r); this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r); this.arcTo(x, y, x + w, y, r); this.closePath();
+  };
+}
 /* Data Config */
     const RANKS = [
       { name: "Pêcheur du Dimanche", minLvl: 1, color: "#8d99ae" },
@@ -347,7 +355,12 @@
         if (audioCtx.state === "suspended") audioCtx.resume();
       } catch (e) {}
     }
-    document.addEventListener("pointerdown", () => initAudio(), { once: true });
+    // iOS ne débloque le son que sur un « vrai » geste (toucher relâché / clic) : on réessaie jusqu'à ce que ça marche.
+    (function unlockAudio() {
+      const evs = ["touchend", "pointerup", "click", "keydown"];
+      const h = () => { initAudio(); if (audioCtx && audioCtx.state === "running") evs.forEach(e => document.removeEventListener(e, h, true)); };
+      evs.forEach(e => document.addEventListener(e, h, true));
+    })();
     document.addEventListener("visibilitychange", () => { if (!audioCtx) return; if (document.hidden) audioCtx.suspend(); else audioCtx.resume(); });
 
     function tone(freq, t, dur, o) {
@@ -492,7 +505,12 @@
     let bubbles = Array.from({length: 20}, () => ({ x: Math.random() * 500, y: Math.random() * 300 + 200, r: Math.random() * 3 + 1, speed: Math.random() * 0.6 + 0.2, alpha: Math.random() * 0.5 + 0.2 }));
 
     /* Main Render Loop */
+    let lastRenderT = 0;
     function render() {
+      // écrans 120 Hz (iPhone Pro, etc.) : on dessine au plus 60 images/s, sinon vagues et particules vont deux fois trop vite
+      const rt = performance.now();
+      if (rt - lastRenderT < 14) { requestAnimationFrame(render); return; }
+      lastRenderT = rt;
       waveOffset += 0.025;
       const nowT = performance.now(); dayClock = (dayClock + Math.min(100, nowT - lastTick) / DAY_MS) % 1; lastTick = nowT; updateChips();
       const w = canvas.width; const h = canvas.height;
@@ -1755,7 +1773,7 @@
       return { catches, record, night, legend, species: Object.keys(state.caughtFish).length, spots: Object.keys(state.unlockedSpots).length, boss: state.stats.bossWins, quests: state.stats.questsDone };
     }
 
-    const APP_VERSION = "1.0.20";   // garde le même numéro que VERSION dans sw.js
+    const APP_VERSION = "1.0.23";   // garde le même numéro que VERSION dans sw.js
     let deferredInstall = null;
     window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstall = e; });
     window.addEventListener("appinstalled", () => { deferredInstall = null; });
