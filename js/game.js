@@ -492,10 +492,23 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
 
     function resizeCanvas() {
       const rect = canvas.parentElement.getBoundingClientRect();
-      canvas.width = rect.width * window.devicePixelRatio;
-      canvas.height = rect.height * window.devicePixelRatio;
+      // Limite le DPR pour éviter un canvas démesuré sur les téléphones haute densité.
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = Math.max(1, Math.round(rect.width * dpr));
+      const height = Math.max(1, Math.round(rect.height * dpr));
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+      }
     }
-    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("resize", resizeCanvas, { passive: true });
+    window.addEventListener("orientationchange", resizeCanvas, { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", resizeCanvas, { passive: true });
+    }
+    if (window.ResizeObserver) {
+      new ResizeObserver(resizeCanvas).observe(canvas.parentElement);
+    }
     resizeCanvas();
 
     /* Visual Background Assets */
