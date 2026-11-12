@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.0.25",
+    "date": "12/11/2026",
+    "notes": [
+      "Nouveaux skins sur le thème canard : Capitaine Canard, Bateau Canard et Canne Bec Doré.",
+      "HUD : profil, heure et informations du lieu abaissés pour mieux dégager le haut de l’écran."
+    ]
+  },
+  {
     "version": "1.0.24",
     "date": "12/11/2026",
     "notes": [
@@ -8,6 +16,7 @@
       "Mise à jour des performances et de la netteté sur les écrans haute densité."
     ]
   },
+  {
     "version": "1.0.23",
     "date": "08/11/2026",
     "notes": [

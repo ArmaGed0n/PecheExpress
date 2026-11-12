@@ -1018,3 +1018,11 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   #hud-card, .icon-btn, .btn-main { transition-duration: 0.01ms; }
 }
+
+/* HUD abaissé : profil et infos de jeu respirent sous la zone système. */
+#hud { top: max(14px, calc(env(safe-area-inset-top) + 10px)); }
+#info-chips { top: max(122px, calc(env(safe-area-inset-top) + 112px)); }
+@media (max-height: 560px) and (orientation: landscape) {
+  #hud { top: max(4px, calc(env(safe-area-inset-top) + 2px)); }
+  #info-chips { top: max(76px, calc(env(safe-area-inset-top) + 72px)); }
+}
