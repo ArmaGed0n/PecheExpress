@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.0.24",
+    "date": "12/11/2026",
+    "notes": [
+      "iPhone : affichage stabilisé à l'ouverture pour éviter les sauts d'écran liés aux variations des barres système.",
+      "Canvas : le redimensionnement ne suit plus les variations temporaires de visualViewport.",
+      "Mise à jour des performances et de la netteté sur les écrans haute densité."
+    ]
+  },
     "version": "1.0.23",
     "date": "08/11/2026",
     "notes": [
