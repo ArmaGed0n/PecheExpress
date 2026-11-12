@@ -4,18 +4,8 @@
 // Secret optionnel : ALLOWED_ORIGINS (ex. https://monsite.com, séparés par des virgules) pour n'autoriser que ton site.
 // @ts-nocheck
 import postgres from "npm:postgres@3.4.4";
+import { cleanPseudo, FISH_RANGES, PLAYER_ID_RE, PUBLIC_ID_RE, parseLeaderboardParams, validateCatch } from "../_shared/leaderboard-validation.ts";
 
-const FISH_RANGES = {
-  sardine: [8,18], truite: [15,45], perche: [10,38], gardon: [8,25], carpe: [25,75],
-  brochet: [40,110], silure: [120,260], ecrevisse: [6,16], saumon: [40,90], esturgeon: [80,200],
-  demoiselle: [5,12], clown: [6,15], globe: [12,35], pieuvre: [40,120], morue: [30,80],
-  crabe: [15,40], narval: [150,300], beluga: [300,550], thon: [60,200], espadon: [80,220],
-  calmar: [150,400], requin: [150,450], baleine: [400,900], lanterne: [10,30], baudroie: [30,90],
-  dragon: [200,600], kraken: [400,800]
-};
-const PLAYER_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const PUBLIC_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-// Profil de pêcheur : uniquement des identifiants de la liste blanche (jamais de texte libre, à part le pseudo).
 const AVATARS = ["char_classic", "char_pirate", "char_cyber", "char_marin"];
 const FRAMES = ["bois", "acier", "or", "bois_orne", "acier_orne", "or_orne"];
 const BANNERS = ["lac", "riviere", "recif", "glace", "mer", "abysse"];
@@ -39,11 +29,14 @@ function cleanProfile(input) {
   };
 }
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
-  status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
+  status,
+  headers: {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff",
+    ...(status === 429 ? { "retry-after": "3" } : {})
+  }
 });
-function cleanPseudo(value) {
-  return String(value ?? "Pêcheur").normalize("NFKC").replace(/[<>\u0000-\u001f\u007f]/g, "").trim().replace(/\s+/g, " ").slice(0, 16) || "Pêcheur";
-}
 let _sql = null;
 function sqlClient() {
   const url = Deno.env.get("SUPABASE_DB_URL");
@@ -54,13 +47,16 @@ function sqlClient() {
 const ALLOWED = (Deno.env.get("ALLOWED_ORIGINS") || "").split(",").map(s => s.trim().replace(/\/$/, "")).filter(Boolean);
 function originAllowed(origin) { return !ALLOWED.length || !origin || ALLOWED.includes(origin); }
 function corsHeaders(origin) {
-  return {
-    "access-control-allow-origin": ALLOWED.length ? (originAllowed(origin) && origin ? origin : ALLOWED[0]) : "*",
+  const headers = {
     "access-control-allow-methods": "GET, POST, OPTIONS",
     "access-control-allow-headers": "content-type, accept, authorization, apikey, x-client-info",
+    "access-control-expose-headers": "retry-after",
     "access-control-max-age": "86400",
     "vary": "Origin"
   };
+  if (!ALLOWED.length) headers["access-control-allow-origin"] = "*";
+  else if (origin && originAllowed(origin)) headers["access-control-allow-origin"] = origin;
+  return headers;
 }
 function mapRow(row) {
   const pr = cleanProfile(row.profile);
@@ -70,11 +66,9 @@ function mapRow(row) {
   };
 }
 async function getLeaderboard(sql, url) {
-  const category = url.searchParams.get("category") || "level";
-  const period = url.searchParams.get("period") || "all";
-  const limit = Math.max(1, Math.min(100, Number.parseInt(url.searchParams.get("limit") || "100", 10) || 100));
-  if (!["level", "fish", "biggest"].includes(category)) return json({ error: "Catégorie inconnue." }, 400);
-  if (!["all", "weekly"].includes(period)) return json({ error: "Période inconnue." }, 400);
+  const params = parseLeaderboardParams(url);
+  if (!params.ok) return json({ error: params.error }, 400);
+  const { category, period, limit } = params;
   let rows;
   if (period === "all" && category === "level") {
     rows = await sql`SELECT p.public_id AS pid, p.profile, p.pseudo, p.level, p.total_fish AS fish_count, p.biggest_fish_cm FROM leaderboard_players p ORDER BY p.level DESC, p.total_fish DESC, p.biggest_fish_cm DESC LIMIT ${limit}`;
@@ -130,19 +124,14 @@ async function updateProfile(sql, body) {
   return json({ error: "Modifications trop rapprochées. Réessaie dans quelques secondes." }, 429);
 }
 async function recordCatch(sql, body) {
-  const playerId = String(body.playerId || "");
-  if (!PLAYER_ID_RE.test(playerId)) return json({ error: "Identifiant joueur invalide." }, 400);
-  const pseudo = cleanPseudo(body.pseudo);
-  const fishId = String(body.fishId || "");
-  const range = FISH_RANGES[fishId];
-  const weightCm = Number(body.weightCm);
-  if (!range || !Number.isInteger(weightCm) || weightCm < range[0] || weightCm >= range[1]) {
-    return json({ error: "Capture invalide." }, 400);
-  }
+  const validated = validateCatch(body);
+  if (!validated.ok) return json({ error: validated.error }, 400);
+  const { playerId, pseudo, weightCm } = validated;
   // La progression du classement est calculée exclusivement côté serveur.
   // Une capture validée rapporte 25 XP au classement ; les valeurs level/xp
   // éventuellement envoyées par d'anciennes versions du client sont ignorées.
-  // Une seule capture par identifiant toutes les 3 secondes.
+  // Limitation atomique par identifiant : une seule capture toutes les 3 secondes.
+  // Sans compte authentifié, les identifiants d’appareil restent falsifiables : ce garde-fou ne supprime pas toute la triche.
   const result = await sql`
     WITH updated AS (
       INSERT INTO leaderboard_players (id, pseudo, level, xp, total_fish, biggest_fish_cm, last_catch_at, created_at, updated_at)
@@ -200,11 +189,12 @@ async function handle(request) {
     const contentType = request.headers.get("content-type") || "";
     if (!contentType.toLowerCase().includes("application/json")) return json({ error: "Le corps doit être en JSON." }, 415);
     const rawBody = await request.text();
-    if (rawBody.length > 2048) return json({ error: "Requête trop volumineuse." }, 413);
+    if (new TextEncoder().encode(rawBody).byteLength > 2048) return json({ error: "Requête trop volumineuse." }, 413);
     let body;
     try { body = JSON.parse(rawBody); } catch { return json({ error: "JSON invalide." }, 400); }
     if (!body || typeof body !== "object" || Array.isArray(body)) return json({ error: "Corps invalide." }, 400);
     if (body.action === "profile") return await updateProfile(sql, body);
+    if (body.action !== undefined && body.action !== "catch") return json({ error: "Action inconnue." }, 400);
     return await recordCatch(sql, body);
   } catch (error) {
     if (error?.message === "DATABASE_URL_MISSING") return json({ error: "Le classement n'est pas configuré : SUPABASE_DB_URL est introuvable." }, 503);
