@@ -493,8 +493,8 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
     let canvasDpr = 1;
     function resizeCanvas() {
       const rect = canvas.parentElement.getBoundingClientRect();
-      // Limite le DPR pour éviter un canvas démesuré sur les téléphones haute densité.
-      const dpr = Math.min(canvasDpr || 1, 2);
+      // Utilise la densité réelle de l'écran, plafonnée à 3 pour garder un coût GPU raisonnable.
+      const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1), 3);
       canvasDpr = dpr;
       const width = Math.max(1, Math.round(rect.width * dpr));
       const height = Math.max(1, Math.round(rect.height * dpr));
@@ -522,11 +522,13 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
     /* Main Render Loop */
     let lastRenderT = 0;
     function render() {
-      // écrans 120 Hz (iPhone Pro, etc.) : on dessine au plus 60 images/s, sinon vagues et particules vont deux fois trop vite
       const rt = performance.now();
-      if (rt - lastRenderT < 14) { requestAnimationFrame(render); return; }
+      if (document.hidden) { lastRenderT = rt; requestAnimationFrame(render); return; }
+      // Cadence cible 60 i/s ; le facteur compense les variations de fréquence d'affichage.
+      if (rt - lastRenderT < 16) { requestAnimationFrame(render); return; }
+      const frameScale = Math.min(2.5, Math.max(0.5, lastRenderT ? (rt - lastRenderT) / 16.667 : 1));
       lastRenderT = rt;
-      waveOffset += 0.025;
+      waveOffset += 0.025 * frameScale;
       const nowT = performance.now(); dayClock = (dayClock + Math.min(100, nowT - lastTick) / DAY_MS) % 1; lastTick = nowT; updateChips();
       const w = canvas.width; const h = canvas.height;
       ctx.save(); ctx.scale(canvasDpr, canvasDpr);
@@ -553,7 +555,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
 
       // Clouds
       clouds.forEach(c => {
-        c.x += c.speed; if (c.x > dW + 100) c.x = -100;
+        c.x += c.speed * frameScale; if (c.x > dW + 100) c.x = -100;
         drawCloud(ctx, c.x, c.y, c.scale);
       });
 
@@ -591,7 +593,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
 
       // Bubbles
       bubbles.forEach(b => {
-        b.y -= b.speed; if (b.y < waterLineY) { b.y = dH; b.x = Math.random() * dW; }
+        b.y -= b.speed * frameScale; if (b.y < waterLineY) { b.y = dH; b.x = Math.random() * dW; }
         ctx.fillStyle = `rgba(255, 255, 255, ${b.alpha})`;
         ctx.beginPath(); ctx.arc(b.x % dW, b.y, b.r, 0, Math.PI * 2); ctx.fill();
       });
@@ -627,7 +629,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       drawBoatAndFisherman(ctx, dW, waterLineY);
 
       // Cast Line / Lure Physics
-      updateCastPhysics(dW, waterLineY);
+      updateCastPhysics(dW, waterLineY, frameScale);
       drawFishingLineAndLure(ctx, dW, waterLineY);
 
       // Particles
@@ -833,9 +835,9 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       state.rodTip = { x: rodTipX, y: rodTipY };
     }
 
-    function updateCastPhysics(dW, waterY) {
+    function updateCastPhysics(dW, waterY, frameScale) {
       if (state.phase === "FLYING") {
-        state.castProgress += 0.035;
+        state.castProgress += 0.035 * frameScale;
         const p = state.castProgress;
         const startX = state.rodTip.x;
         const startY = state.rodTip.y;
@@ -1128,7 +1130,16 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
         }
       }
     }
-    setInterval(gameLoop, 1000 / 60);
+    let gameLoopTimer = setInterval(gameLoop, 1000 / 60);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        clearInterval(gameLoopTimer);
+      } else {
+        lastTick = performance.now();
+        lastRenderT = 0;
+        gameLoopTimer = setInterval(gameLoop, 1000 / 60);
+      }
+    });
 
     const actionBtn = document.getElementById("action-btn");
     const btnText = document.getElementById("btn-text");
