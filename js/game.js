@@ -2057,7 +2057,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       boat_kayak: { r: "commune", e: "🛶" }, boat_chalutier: { r: "rare", e: "🚢" },
       boat_voilier: { r: "rare", e: "⛵" }, boat_fantome: { r: "legendaire", e: "👻" },
       rod_fibre: { r: "commune", e: "🎣", bonus: 0.03 }, rod_titane: { r: "rare", e: "🎣", bonus: 0.07 },
-      rod_cristal: { r: "rare", e: "❄️", bonus: 0.08 }, rod_magma: { r: "legendaire", e: "🔥", bonus: 0.11 }, rod_duck: { r: "rare", e: "🪄", bonus: 0.08, color: "#ffb703" },
+      rod_cristal: { r: "rare", e: "❄️", bonus: 0.08 }, rod_magma: { r: "legendaire", e: "🔥", bonus: 0.11 }, rod_duck: { r: "rare", e: "🪄", bonus: 0, color: "#ffb703" },
       lure_mouche: { r: "commune", e: "🪰", gold: 1.08 }, lure_crevette: { r: "rare", e: "🦐", gold: 1.2 },
       lure_meduse: { r: "legendaire", e: "🪼", gold: 1.35 }
     });
