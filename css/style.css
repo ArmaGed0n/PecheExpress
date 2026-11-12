@@ -23,11 +23,17 @@
       touch-action: none;
       width: 100%;
       height: 100%;
-      height: 100dvh;
       overflow: hidden;
       background-color: #030712;
       font-family: var(--font-main);
       color: #ffffff;
+    }
+
+    /* Garde une fenêtre stable sur iOS : 100dvh suit les barres système
+       et peut redimensionner brutalement le jeu à l'ouverture. */
+    body {
+      position: fixed;
+      inset: 0;
     }
 
     #game-container {
