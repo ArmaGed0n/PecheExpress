@@ -983,3 +983,38 @@ html, body {
   #skins-btn.bag-btn { width: 48px; height: 48px; right: max(10px, calc(10px + env(safe-area-inset-right))); bottom: calc(max(8px, env(safe-area-inset-bottom)) + 54px); }
   #skins-btn.bag-btn img { width: 34px; }
 }
+
+
+/* ===== HUD adaptatif : lisibilité et zones tactiles selon la taille réelle ===== */
+#hud-card {
+  min-height: 76px;
+  gap: clamp(7px, 2vw, 12px);
+  padding-left: clamp(7px, 2vw, 10px);
+  padding-right: clamp(9px, 2.5vw, 14px);
+}
+#hud-av { width: clamp(48px, 14vw, 66px); height: clamp(48px, 14vw, 66px); }
+.hud-name { font-size: clamp(13px, 3.8vw, 16px); }
+.hud-gold { padding: 6px clamp(7px, 2vw, 10px); font-size: clamp(12px, 3.3vw, 14px); }
+#hud { padding-top: max(8px, env(safe-area-inset-top)); }
+#top-buttons .icon-btn, #skins-btn.bag-btn { touch-action: manipulation; }
+#action-btn { touch-action: manipulation; }
+@media (max-width: 370px) {
+  #hud-card { gap: 7px; }
+  #hud-av { width: 46px; height: 46px; }
+  .hud-name { font-size: 13px; }
+  #rank-val { font-size: 10px; }
+  .hud-gold { gap: 3px; padding: 5px 7px; font-size: 11px; }
+  #hud { padding-left: max(8px, env(safe-area-inset-left)); padding-right: max(8px, env(safe-area-inset-right)); }
+}
+@media (orientation: landscape) and (min-height: 561px) {
+  #game-container { max-width: none; }
+  #hud { max-width: 620px; margin: 0 auto; }
+  #top-buttons { top: max(12px, calc(env(safe-area-inset-top) + 12px)); }
+}
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  html, body { overscroll-behavior: none; }
+  #game-container { min-height: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #hud-card, .icon-btn, .btn-main { transition-duration: 0.01ms; }
+}
