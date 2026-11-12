@@ -29,6 +29,8 @@ Deno.test("validates fish and inclusive/exclusive size boundaries", () => {
   assert(!validateCatch({ playerId: validPlayerId, eventId: validPlayerId, fishId: "unknown", weightCm: 10 }).ok, "unknown fish should fail");
   assert(!validateCatch({ playerId: validPlayerId, eventId: validPlayerId, fishId: "sardine", weightCm: 8.5 }).ok, "fractional size should fail");
   assert(!validateCatch({ playerId: validPlayerId, eventId: "bad-event", fishId: "sardine", weightCm: 10 }).ok, "malformed event ID should fail");
+  const legacy = validateCatch({ playerId: validPlayerId, fishId: "sardine", weightCm: 10 });
+  assert(legacy.ok && EVENT_ID_RE.test(legacy.eventId), "legacy clients should receive a generated event ID");
 });
 
 Deno.test("rejects malformed player IDs and non-object request bodies", () => {
