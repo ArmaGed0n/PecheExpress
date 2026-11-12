@@ -1,7 +1,8 @@
-# Pêche Express — configuration Supabase (CLI)
-# Le joueur est identifié par un identifiant anonyme généré sur son appareil, sans compte Supabase :
-# la fonction est donc publique (pas de vérification JWT). La base reste protégée (RLS activée, aucun accès direct).
-project_id = "peche-express"
+# Pêche Express — configuration Supabase CLI.
+# Le slug de production est bright-api (le nom historique de la fonction reste leaderboard).
+# L'entrypoint personnalisé permet de conserver le dossier source sans changer l'URL publique.
+project_id = "sczeztgjbzgefnwiysla"
 
-[functions.leaderboard]
+[functions.bright-api]
 verify_jwt = false
+entrypoint = "./functions/leaderboard/index.ts"
