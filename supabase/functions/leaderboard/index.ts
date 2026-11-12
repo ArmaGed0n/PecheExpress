@@ -1,21 +1,11 @@
 // Pêche Express — API du classement (Supabase Edge Function, Deno).
-// Déploiement : supabase functions deploy leaderboard --no-verify-jwt
+// Déploiement : supabase functions deploy bright-api --project-ref sczeztgjbzgefnwiysla
 // Connexion à la base : variable SUPABASE_DB_URL, fournie automatiquement par Supabase aux Edge Functions.
-// Secret optionnel : ALLOWED_ORIGINS (ex. https://monsite.com, séparés par des virgules) pour n'autoriser que ton site.
+// ALLOWED_ORIGINS limite CORS dans les navigateurs ; ce n'est ni une authentification ni une protection anti-bot.
 // @ts-nocheck
 import postgres from "npm:postgres@3.4.4";
+import { cleanPseudo, FISH_RANGES, PLAYER_ID_RE, PUBLIC_ID_RE, parseLeaderboardParams, validateCatch } from "../_shared/leaderboard-validation.ts";
 
-const FISH_RANGES = {
-  sardine: [8,18], truite: [15,45], perche: [10,38], gardon: [8,25], carpe: [25,75],
-  brochet: [40,110], silure: [120,260], ecrevisse: [6,16], saumon: [40,90], esturgeon: [80,200],
-  demoiselle: [5,12], clown: [6,15], globe: [12,35], pieuvre: [40,120], morue: [30,80],
-  crabe: [15,40], narval: [150,300], beluga: [300,550], thon: [60,200], espadon: [80,220],
-  calmar: [150,400], requin: [150,450], baleine: [400,900], lanterne: [10,30], baudroie: [30,90],
-  dragon: [200,600], kraken: [400,800]
-};
-const PLAYER_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const PUBLIC_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-// Profil de pêcheur : uniquement des identifiants de la liste blanche (jamais de texte libre, à part le pseudo).
 const AVATARS = ["char_classic", "char_pirate", "char_cyber", "char_marin"];
 const FRAMES = ["bois", "acier", "or", "bois_orne", "acier_orne", "or_orne"];
 const BANNERS = ["lac", "riviere", "recif", "glace", "mer", "abysse"];
@@ -39,11 +29,14 @@ function cleanProfile(input) {
   };
 }
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
-  status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
+  status,
+  headers: {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff",
+    ...(status === 429 ? { "retry-after": "3" } : {})
+  }
 });
-function cleanPseudo(value) {
-  return String(value ?? "Pêcheur").normalize("NFKC").replace(/[<>\u0000-\u001f\u007f]/g, "").trim().replace(/\s+/g, " ").slice(0, 16) || "Pêcheur";
-}
 let _sql = null;
 function sqlClient() {
   const url = Deno.env.get("SUPABASE_DB_URL");
@@ -54,13 +47,16 @@ function sqlClient() {
 const ALLOWED = (Deno.env.get("ALLOWED_ORIGINS") || "").split(",").map(s => s.trim().replace(/\/$/, "")).filter(Boolean);
 function originAllowed(origin) { return !ALLOWED.length || !origin || ALLOWED.includes(origin); }
 function corsHeaders(origin) {
-  return {
-    "access-control-allow-origin": ALLOWED.length ? (originAllowed(origin) && origin ? origin : ALLOWED[0]) : "*",
+  const headers = {
     "access-control-allow-methods": "GET, POST, OPTIONS",
     "access-control-allow-headers": "content-type, accept, authorization, apikey, x-client-info",
+    "access-control-expose-headers": "retry-after",
     "access-control-max-age": "86400",
     "vary": "Origin"
   };
+  if (!ALLOWED.length) headers["access-control-allow-origin"] = "*";
+  else if (origin && originAllowed(origin)) headers["access-control-allow-origin"] = origin;
+  return headers;
 }
 function mapRow(row) {
   const pr = cleanProfile(row.profile);
@@ -70,11 +66,9 @@ function mapRow(row) {
   };
 }
 async function getLeaderboard(sql, url) {
-  const category = url.searchParams.get("category") || "level";
-  const period = url.searchParams.get("period") || "all";
-  const limit = Math.max(1, Math.min(100, Number.parseInt(url.searchParams.get("limit") || "100", 10) || 100));
-  if (!["level", "fish", "biggest"].includes(category)) return json({ error: "Catégorie inconnue." }, 400);
-  if (!["all", "weekly"].includes(period)) return json({ error: "Période inconnue." }, 400);
+  const params = parseLeaderboardParams(url);
+  if (!params.ok) return json({ error: params.error }, 400);
+  const { category, period, limit } = params;
   let rows;
   if (period === "all" && category === "level") {
     rows = await sql`SELECT p.public_id AS pid, p.profile, p.pseudo, p.level, p.total_fish AS fish_count, p.biggest_fish_cm FROM leaderboard_players p ORDER BY p.level DESC, p.total_fish DESC, p.biggest_fish_cm DESC LIMIT ${limit}`;
@@ -114,7 +108,7 @@ async function updateProfile(sql, body) {
   const profile = cleanProfile(body.profile);
   const result = await sql`
     WITH upd AS (
-      UPDATE leaderboard_players SET pseudo = ${pseudo}, profile = ${sql.json(profile)}, profile_updated_at = now(), updated_at = now()
+      UPDATE leaderboard_players SET pseudo = ${pseudo}, profile = (COALESCE(leaderboard_players.profile, '{}'::jsonb) - '__catch_ids') || ${sql.json(profile)} || CASE WHEN leaderboard_players.profile ? '__catch_ids' THEN jsonb_build_object('__catch_ids', leaderboard_players.profile->'__catch_ids') ELSE '{}'::jsonb END, profile_updated_at = now(), updated_at = now()
       WHERE id = ${playerId}::uuid AND (profile_updated_at IS NULL OR profile_updated_at <= now() - interval '2 seconds')
       RETURNING id, public_id
     ), wk AS (
@@ -125,28 +119,23 @@ async function updateProfile(sql, body) {
     SELECT public_id FROM upd`;
   if (result.length) return json({ ok: true, pid: String(result[0].public_id) });
   const exists = await sql`SELECT 1 FROM leaderboard_players WHERE id = ${playerId}::uuid`;
-  // Pas encore de ligne : le profil sera envoyé après la première prise synchronisée.
-  if (!exists.length) return json({ error: "Joueur pas encore classé." }, 404);
-  return json({ error: "Modifications trop rapprochées. Réessaie dans quelques secondes." }, 429);
-}
-async function recordCatch(sql, body) {
-  const playerId = String(body.playerId || "");
-  if (!PLAYER_ID_RE.test(playerId)) return json({ error: "Identifiant joueur invalide." }, 400);
-  const pseudo = cleanPseudo(body.pseudo);
-  const fishId = String(body.fishId || "");
-  const range = FISH_RANGES[fishId];
-  const weightCm = Number(body.weightCm);
-  if (!range || !Number.isInteger(weightCm) || weightCm < range[0] || weightCm >= range[1]) {
-    return json({ error: "Capture invalide." }, 400);
-  }
+  // Pas encore de ligne : le profiasync function recordCatch(sql, body) {
+  const validated = validateCatch(body);
+  if (!validated.ok) return json({ error: validated.error }, 400);
+  const { playerId, pseudo, weightCm, eventId } = validated;
+
   // La progression du classement est calculée exclusivement côté serveur.
-  // Une capture validée rapporte 25 XP au classement ; les valeurs level/xp
-  // éventuellement envoyées par d'anciennes versions du client sont ignorées.
-  // Une seule capture par identifiant toutes les 3 secondes.
+  // Une capture validée rapporte 25 XP au classement ; level/xp envoyés par le client sont ignorés.
+  // Le JSONB privé __catch_ids rend les reprises réseau idempotentes sans migration de table.
+  // Limitation atomique par identifiant : une capture toutes les 3 secondes.
+  // Sans compte authentifié, les identifiants d'appareil restent falsifiables : ce garde-fou ne supprime pas toute la triche.
   const result = await sql`
     WITH updated AS (
-      INSERT INTO leaderboard_players (id, pseudo, level, xp, total_fish, biggest_fish_cm, last_catch_at, created_at, updated_at)
-      VALUES (${playerId}::uuid, ${pseudo}, 1, 25, 1, ${weightCm}, now(), now(), now())
+      INSERT INTO leaderboard_players
+        (id, pseudo, level, xp, total_fish, biggest_fish_cm, last_catch_at, created_at, updated_at, profile)
+      VALUES
+        (${playerId}::uuid, ${pseudo}, 1, 25, 1, ${weightCm}, now(), now(), now(),
+         jsonb_build_object('__catch_ids', jsonb_build_array(${eventId}::text)))
       ON CONFLICT (id) DO UPDATE SET
         pseudo = EXCLUDED.pseudo,
         level = CASE
@@ -164,8 +153,32 @@ async function recordCatch(sql, body) {
         END,
         total_fish = leaderboard_players.total_fish + 1,
         biggest_fish_cm = GREATEST(leaderboard_players.biggest_fish_cm, EXCLUDED.biggest_fish_cm),
-        last_catch_at = now(), updated_at = now()
-      WHERE leaderboard_players.last_catch_at IS NULL OR leaderboard_players.last_catch_at <= now() - interval '3 seconds'
+        last_catch_at = now(),
+        updated_at = now(),
+        profile = jsonb_set(
+          COALESCE(leaderboard_players.profile, '{}'::jsonb),
+          '{__catch_ids}',
+          (
+            SELECT COALESCE(jsonb_agg(ids.value ORDER BY ids.ordinality), '[]'::jsonb)
+            FROM (
+              SELECT value, ordinality
+              FROM jsonb_array_elements(
+                COALESCE(leaderboard_players.profile->'__catch_ids', '[]'::jsonb)
+                || jsonb_build_array(${eventId}::text)
+              ) WITH ORDINALITY AS recent(value, ordinality)
+              ORDER BY ordinality DESC
+              LIMIT 200
+            ) AS ids
+          ),
+          true
+        )
+      WHERE
+        (leaderboard_players.last_catch_at IS NULL
+          OR leaderboard_players.last_catch_at <= now() - interval '3 seconds')
+        AND NOT (
+          COALESCE(leaderboard_players.profile->'__catch_ids', '[]'::jsonb)
+          ? ${eventId}::text
+        )
       RETURNING id, public_id, pseudo, level, xp, total_fish, biggest_fish_cm
     ), weekly AS (
       INSERT INTO leaderboard_weekly (player_id, week_start, pseudo, level, fish_count, biggest_fish_cm, updated_at)
@@ -181,9 +194,19 @@ async function recordCatch(sql, body) {
     SELECT updated.public_id, updated.level, updated.xp, updated.total_fish, updated.biggest_fish_cm
     FROM updated JOIN weekly ON weekly.player_id = updated.id
   `;
-  if (!result.length) return json({ error: "Capture trop rapprochée. Réessaie dans quelques secondes." }, 429);
+
+  if (!result.length) {
+    const prior = await sql`
+      SELECT COALESCE(profile->'__catch_ids', '[]'::jsonb) ? ${eventId}::text AS duplicate
+      FROM leaderboard_players
+      WHERE id = ${playerId}::uuid
+    `;
+    if (prior[0]?.duplicate) return json({ ok: true, duplicate: true }, 200);
+    return json({ error: "Capture trop rapprochée. Réessaie dans quelques secondes." }, 429);
+  }
   return json({ ok: true, player: {
-    pid: String(result[0].public_id), level: Number(result[0].level), xp: Number(result[0].xp), totalFish: Number(result[0].total_fish), biggestFishCm: Number(result[0].biggest_fish_cm)
+    pid: String(result[0].public_id), level: Number(result[0].level), xp: Number(result[0].xp),
+    totalFish: Number(result[0].total_fish), biggestFishCm: Number(result[0].biggest_fish_cm)
   } }, 201);
 }
 async function handle(request) {
@@ -200,11 +223,12 @@ async function handle(request) {
     const contentType = request.headers.get("content-type") || "";
     if (!contentType.toLowerCase().includes("application/json")) return json({ error: "Le corps doit être en JSON." }, 415);
     const rawBody = await request.text();
-    if (rawBody.length > 2048) return json({ error: "Requête trop volumineuse." }, 413);
+    if (new TextEncoder().encode(rawBody).byteLength > 2048) return json({ error: "Requête trop volumineuse." }, 413);
     let body;
     try { body = JSON.parse(rawBody); } catch { return json({ error: "JSON invalide." }, 400); }
     if (!body || typeof body !== "object" || Array.isArray(body)) return json({ error: "Corps invalide." }, 400);
     if (body.action === "profile") return await updateProfile(sql, body);
+    if (body.action !== undefined && body.action !== "catch") return json({ error: "Action inconnue." }, 400);
     return await recordCatch(sql, body);
   } catch (error) {
     if (error?.message === "DATABASE_URL_MISSING") return json({ error: "Le classement n'est pas configuré : SUPABASE_DB_URL est introuvable." }, 503);
