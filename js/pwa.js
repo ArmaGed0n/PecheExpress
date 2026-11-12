@@ -1,21 +1,35 @@
-/* Plein écran sur mobile : masque la barre de navigation du téléphone (bande blanche).
-   Demandé au premier toucher, uniquement dans le navigateur (jamais dans l'application installée). */
+/* Plein écran mobile dans les navigateurs qui l'autorisent.
+   Les PWA installées utilisent le mode fullscreen déclaré dans manifest.webmanifest.
+   iOS Safari ne propose pas l'API Fullscreen pour les pages : les métadonnées Apple
+   et l'installation sur l'écran d'accueil restent la solution prise en charge. */
 (function () {
   var de = document.documentElement;
   var req = de.requestFullscreen || de.webkitRequestFullscreen;
-  /* Uniquement dans le navigateur : l'application installée gère son affichage via le manifest. */
-  if (!req || !window.matchMedia || !matchMedia("(pointer: coarse)").matches || !matchMedia("(display-mode: browser)").matches) return;
+  if (!req || !window.matchMedia ||
+      !matchMedia("(pointer: coarse)").matches ||
+      !matchMedia("(display-mode: browser)").matches) return;
+
   var busy = false;
-  function isFull() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
-  function go() {
-    if (busy || isFull()) return; busy = true;
-    try {
-      var r = req.call(de, { navigationUI: "hide" });
-      if (r && r.then) r.then(function () { busy = false; }, function () { busy = false; }); else busy = false;
-    } catch (e) { busy = false; }
+  function isFull() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
   }
+  function go() {
+    if (busy || isFull()) return;
+    busy = true;
+    try {
+      var result = req.call(de, { navigationUI: "hide" });
+      if (result && typeof result.then === "function") {
+        result.then(function () { busy = false; }, function () { busy = false; });
+      } else {
+        busy = false;
+      }
+    } catch (e) {
+      busy = false;
+    }
+  }
+  // pointerup couvre les écrans tactiles modernes sans déclencher deux demandes
+  // via pointerup + touchend sur le même appui.
   document.addEventListener("pointerup", go, true);
-  document.addEventListener("touchend", go, true);
 })();
 
 /* Installation + mises à jour (service worker) — actif seulement quand le jeu est hébergé en http(s).
