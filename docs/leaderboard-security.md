@@ -43,14 +43,17 @@ Les tests unitaires couvrent les identifiants, les espèces et tailles, le netto
 
 ## Déploiement contrôlé
 
-Après validation de la PR et des tests sur un projet Supabase de staging, depuis la révision à publier :
+Après validation de la PR, déployer d'abord sur un projet Supabase de staging séparé. Utiliser explicitement sa référence :
 
 ```sh
-supabase link --project-ref sczeztgjbzgefnwiysla
-supabase functions deploy bright-api --project-ref sczeztgjbzgefnwiysla
+supabase functions deploy bright-api --project-ref <STAGING_PROJECT_REF>
 ```
 
-Ne pas déployer avant d'avoir confirmé que le compte Supabase ciblé est bien le projet de staging, puis remplacer la référence par celle du projet de production seulement lors de la publication autorisée.
+Le fichier de configuration contient actuellement la référence du projet de production comme valeur par défaut. Ne jamais lancer un déploiement sans `--project-ref`. Le déploiement de production, uniquement après validation et autorisation explicite, serait :
+
+```sh
+supabase functions deploy bright-api --project-ref sczeztgjbzgefnwiysla
+```
 
 Aucune migration de schéma n'est nécessaire pour cette correction. Aucune donnée existante n'est supprimée.
 
