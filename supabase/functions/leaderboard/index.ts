@@ -1,7 +1,7 @@
 // Pêche Express — API du classement (Supabase Edge Function, Deno).
-// Déploiement : supabase functions deploy leaderboard --no-verify-jwt
+// Déploiement : supabase functions deploy bright-api --project-ref sczeztgjbzgefnwiysla
 // Connexion à la base : variable SUPABASE_DB_URL, fournie automatiquement par Supabase aux Edge Functions.
-// Secret optionnel : ALLOWED_ORIGINS (ex. https://monsite.com, séparés par des virgules) pour n'autoriser que ton site.
+// ALLOWED_ORIGINS limite CORS dans les navigateurs ; ce n'est ni une authentification ni une protection anti-bot.
 // @ts-nocheck
 import postgres from "npm:postgres@3.4.4";
 import { cleanPseudo, FISH_RANGES, PLAYER_ID_RE, PUBLIC_ID_RE, parseLeaderboardParams, validateCatch } from "../_shared/leaderboard-validation.ts";
@@ -108,7 +108,7 @@ async function updateProfile(sql, body) {
   const profile = cleanProfile(body.profile);
   const result = await sql`
     WITH upd AS (
-      UPDATE leaderboard_players SET pseudo = ${pseudo}, profile = ${sql.json(profile)}, profile_updated_at = now(), updated_at = now()
+      UPDATE leaderboard_players SET pseudo = ${pseudo}, profile = (COALESCE(leaderboard_players.profile, '{}'::jsonb) - '__catch_ids') || ${sql.json(profile)} || CASE WHEN leaderboard_players.profile ? '__catch_ids' THEN jsonb_build_object('__catch_ids', leaderboard_players.profile->'__catch_ids') ELSE '{}'::jsonb END, profile_updated_at = now(), updated_at = now()
       WHERE id = ${playerId}::uuid AND (profile_updated_at IS NULL OR profile_updated_at <= now() - interval '2 seconds')
       RETURNING id, public_id
     ), wk AS (
@@ -119,23 +119,23 @@ async function updateProfile(sql, body) {
     SELECT public_id FROM upd`;
   if (result.length) return json({ ok: true, pid: String(result[0].public_id) });
   const exists = await sql`SELECT 1 FROM leaderboard_players WHERE id = ${playerId}::uuid`;
-  // Pas encore de ligne : le profil sera envoyé après la première prise synchronisée.
-  if (!exists.length) return json({ error: "Joueur pas encore classé." }, 404);
-  return json({ error: "Modifications trop rapprochées. Réessaie dans quelques secondes." }, 429);
-}
-async function recordCatch(sql, body) {
+  // Pas encore de ligne : le profiasync function recordCatch(sql, body) {
   const validated = validateCatch(body);
   if (!validated.ok) return json({ error: validated.error }, 400);
-  const { playerId, pseudo, weightCm } = validated;
+  const { playerId, pseudo, weightCm, eventId } = validated;
+
   // La progression du classement est calculée exclusivement côté serveur.
-  // Une capture validée rapporte 25 XP au classement ; les valeurs level/xp
-  // éventuellement envoyées par d'anciennes versions du client sont ignorées.
-  // Limitation atomique par identifiant : une seule capture toutes les 3 secondes.
-  // Sans compte authentifié, les identifiants d’appareil restent falsifiables : ce garde-fou ne supprime pas toute la triche.
+  // Une capture validée rapporte 25 XP au classement ; level/xp envoyés par le client sont ignorés.
+  // Le JSONB privé __catch_ids rend les reprises réseau idempotentes sans migration de table.
+  // Limitation atomique par identifiant : une capture toutes les 3 secondes.
+  // Sans compte authentifié, les identifiants d'appareil restent falsifiables : ce garde-fou ne supprime pas toute la triche.
   const result = await sql`
     WITH updated AS (
-      INSERT INTO leaderboard_players (id, pseudo, level, xp, total_fish, biggest_fish_cm, last_catch_at, created_at, updated_at)
-      VALUES (${playerId}::uuid, ${pseudo}, 1, 25, 1, ${weightCm}, now(), now(), now())
+      INSERT INTO leaderboard_players
+        (id, pseudo, level, xp, total_fish, biggest_fish_cm, last_catch_at, created_at, updated_at, profile)
+      VALUES
+        (${playerId}::uuid, ${pseudo}, 1, 25, 1, ${weightCm}, now(), now(), now(),
+         jsonb_build_object('__catch_ids', jsonb_build_array(${eventId}::text)))
       ON CONFLICT (id) DO UPDATE SET
         pseudo = EXCLUDED.pseudo,
         level = CASE
@@ -153,8 +153,32 @@ async function recordCatch(sql, body) {
         END,
         total_fish = leaderboard_players.total_fish + 1,
         biggest_fish_cm = GREATEST(leaderboard_players.biggest_fish_cm, EXCLUDED.biggest_fish_cm),
-        last_catch_at = now(), updated_at = now()
-      WHERE leaderboard_players.last_catch_at IS NULL OR leaderboard_players.last_catch_at <= now() - interval '3 seconds'
+        last_catch_at = now(),
+        updated_at = now(),
+        profile = jsonb_set(
+          COALESCE(leaderboard_players.profile, '{}'::jsonb),
+          '{__catch_ids}',
+          (
+            SELECT COALESCE(jsonb_agg(ids.value ORDER BY ids.ordinality), '[]'::jsonb)
+            FROM (
+              SELECT value, ordinality
+              FROM jsonb_array_elements(
+                COALESCE(leaderboard_players.profile->'__catch_ids', '[]'::jsonb)
+                || jsonb_build_array(${eventId}::text)
+              ) WITH ORDINALITY AS recent(value, ordinality)
+              ORDER BY ordinality DESC
+              LIMIT 200
+            ) AS ids
+          ),
+          true
+        )
+      WHERE
+        (leaderboard_players.last_catch_at IS NULL
+          OR leaderboard_players.last_catch_at <= now() - interval '3 seconds')
+        AND NOT (
+          COALESCE(leaderboard_players.profile->'__catch_ids', '[]'::jsonb)
+          ? ${eventId}::text
+        )
       RETURNING id, public_id, pseudo, level, xp, total_fish, biggest_fish_cm
     ), weekly AS (
       INSERT INTO leaderboard_weekly (player_id, week_start, pseudo, level, fish_count, biggest_fish_cm, updated_at)
@@ -170,9 +194,19 @@ async function recordCatch(sql, body) {
     SELECT updated.public_id, updated.level, updated.xp, updated.total_fish, updated.biggest_fish_cm
     FROM updated JOIN weekly ON weekly.player_id = updated.id
   `;
-  if (!result.length) return json({ error: "Capture trop rapprochée. Réessaie dans quelques secondes." }, 429);
+
+  if (!result.length) {
+    const prior = await sql`
+      SELECT COALESCE(profile->'__catch_ids', '[]'::jsonb) ? ${eventId}::text AS duplicate
+      FROM leaderboard_players
+      WHERE id = ${playerId}::uuid
+    `;
+    if (prior[0]?.duplicate) return json({ ok: true, duplicate: true }, 200);
+    return json({ error: "Capture trop rapprochée. Réessaie dans quelques secondes." }, 429);
+  }
   return json({ ok: true, player: {
-    pid: String(result[0].public_id), level: Number(result[0].level), xp: Number(result[0].xp), totalFish: Number(result[0].total_fish), biggestFishCm: Number(result[0].biggest_fish_cm)
+    pid: String(result[0].public_id), level: Number(result[0].level), xp: Number(result[0].xp),
+    totalFish: Number(result[0].total_fish), biggestFishCm: Number(result[0].biggest_fish_cm)
   } }, 201);
 }
 async function handle(request) {
