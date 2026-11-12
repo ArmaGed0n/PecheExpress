@@ -139,33 +139,27 @@ async function recordCatch(sql, body) {
   if (!range || !Number.isInteger(weightCm) || weightCm < range[0] || weightCm >= range[1]) {
     return json({ error: "Capture invalide." }, 400);
   }
-  // Le jeu local possède la progression réelle. On synchronise son niveau/XP à chaque prise.
-  // Les anciennes captures en file d'attente, sans level/xp, gardent le calcul historique.
-  const hasProgress = body.level !== undefined && body.xp !== undefined;
-  const playerLevel = hasProgress ? Number(body.level) : null;
-  const playerXp = hasProgress ? Number(body.xp) : null;
-  if (hasProgress && (
-    !Number.isInteger(playerLevel) || playerLevel < 1 || playerLevel > 100000 ||
-    !Number.isInteger(playerXp) || playerXp < 0 || playerXp >= playerLevel * 50
-  )) return json({ error: "Progression joueur invalide." }, 400);
-
+  // La progression du classement est calculée exclusivement côté serveur.
+  // Une capture validée rapporte 25 XP au classement ; les valeurs level/xp
+  // éventuellement envoyées par d'anciennes versions du client sont ignorées.
   // Une seule capture par identifiant toutes les 3 secondes.
   const result = await sql`
     WITH updated AS (
       INSERT INTO leaderboard_players (id, pseudo, level, xp, total_fish, biggest_fish_cm, last_catch_at, created_at, updated_at)
-      VALUES (${playerId}::uuid, ${pseudo}, COALESCE(${playerLevel}::int, 1), COALESCE(${playerXp}::int, 25), 1, ${weightCm}, now(), now(), now())
+      VALUES (${playerId}::uuid, ${pseudo}, 1, 25, 1, ${weightCm}, now(), now(), now())
       ON CONFLICT (id) DO UPDATE SET
         pseudo = EXCLUDED.pseudo,
         level = CASE
-          WHEN ${playerLevel}::int IS NOT NULL THEN GREATEST(leaderboard_players.level, ${playerLevel}::int)
-          WHEN leaderboard_players.xp + 25 >= leaderboard_players.level * 50 THEN leaderboard_players.level + 1
+          WHEN leaderboard_players.level < 100000
+            AND leaderboard_players.xp + 25 >= leaderboard_players.level * 50
+          THEN leaderboard_players.level + 1
           ELSE leaderboard_players.level
         END,
         xp = CASE
-          WHEN ${playerLevel}::int IS NOT NULL AND ${playerLevel}::int > leaderboard_players.level THEN ${playerXp}::int
-          WHEN ${playerLevel}::int IS NOT NULL AND ${playerLevel}::int = leaderboard_players.level THEN ${playerXp}::int
-          WHEN ${playerLevel}::int IS NOT NULL THEN leaderboard_players.xp
-          WHEN leaderboard_players.xp + 25 >= leaderboard_players.level * 50 THEN leaderboard_players.xp + 25 - leaderboard_players.level * 50
+          WHEN leaderboard_players.level >= 100000
+          THEN LEAST(4999999, leaderboard_players.xp + 25)
+          WHEN leaderboard_players.xp + 25 >= leaderboard_players.level * 50
+          THEN leaderboard_players.xp + 25 - leaderboard_players.level * 50
           ELSE leaderboard_players.xp + 25
         END,
         total_fish = leaderboard_players.total_fish + 1,
