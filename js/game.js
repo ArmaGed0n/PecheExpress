@@ -2199,7 +2199,27 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       const cv = document.getElementById("inv-preview"); if (!cv) return;
       const SP = window.SPRITES || {}, eq = state.equippedSkins;
       const boat = SP[eq.boat || "boat_classic"] || SP.boat, ch = SP[eq.character], rod = SP[eq.rod], lure = SP[eq.lure];
-      if (![boat, ch, rod, lure].every(spriteOK)) { if (invTries++ < 25) setTimeout(drawInvPreview, 150); return; }
+      if (![boat, ch, rod, lure].every(spriteOK)) {
+        if ([eq.boat, eq.character, eq.rod].some(id => ["boat_duck", "char_duck", "rod_duck"].includes(id))) {
+          invTries = 0;
+          const dpr = window.devicePixelRatio || 1, W = 340, H = 190;
+          cv.width = W * dpr; cv.height = H * dpr;
+          const g = cv.getContext("2d"); g.scale(dpr, dpr);
+          const sky = g.createLinearGradient(0, 0, 0, 124); sky.addColorStop(0, "#1d3254"); sky.addColorStop(1, "#7fbfe0");
+          g.fillStyle = sky; g.fillRect(0, 0, W, 124);
+          const sea = g.createLinearGradient(0, 124, 0, H); sea.addColorStop(0, "#1aa0b8"); sea.addColorStop(1, "#08394f");
+          g.fillStyle = sea; g.fillRect(0, 124, W, H - 124);
+          g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(136, 151, 94, 10, 0, 0, Math.PI * 2); g.fill();
+          g.font = "86px system-ui"; g.textAlign = "center"; g.fillText(eq.boat === "boat_duck" ? "🦆" : "🛶", 135, 154);
+          g.font = "42px system-ui"; g.fillText(eq.character === "char_duck" ? "🦆" : "🎣", 135, 104);
+          g.strokeStyle = eq.rod === "rod_duck" ? "#ffb703" : "#d8e2dc"; g.lineWidth = 5; g.lineCap = "round";
+          g.beginPath(); g.moveTo(148, 96); g.quadraticCurveTo(200, 45, 245, 33); g.stroke();
+          g.font = "22px system-ui"; g.fillText("🪝", 260, 54);
+          return;
+        }
+        if (invTries++ < 25) setTimeout(drawInvPreview, 150);
+        return;
+      }
       invTries = 0;
       const dpr = window.devicePixelRatio || 1, W = 340, H = 190, S = 2.0, wl = 124;
       cv.width = W * dpr; cv.height = H * dpr;
