@@ -1,11 +1,11 @@
-export const FISH_RANGES: Readonly<Record<string, readonly [number, number]>> = Object.freeze({
+export const FISH_RANGES: Readonly<Record<string, readonly [number, number]>> = {
   sardine: [8,18], truite: [15,45], perche: [10,38], gardon: [8,25], carpe: [25,75],
   brochet: [40,110], silure: [120,260], ecrevisse: [6,16], saumon: [40,90], esturgeon: [80,200],
   demoiselle: [5,12], clown: [6,15], globe: [12,35], pieuvre: [40,120], morue: [30,80],
   crabe: [15,40], narval: [150,300], beluga: [300,550], thon: [60,200], espadon: [80,220],
   calmar: [150,400], requin: [150,450], baleine: [400,900], lanterne: [10,30], baudroie: [30,90],
   dragon: [200,600], kraken: [400,800]
-});
+};
 
 export const PLAYER_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export const PUBLIC_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
