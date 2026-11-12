@@ -12,8 +12,8 @@ export const PUBLIC_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0
 
 export function cleanPseudo(value: unknown): string {
   return String(value ?? "Pêcheur").normalize("NFKC")
-    .replace(/[<>\\u0000-\\u001f\\u007f]/g, "")
-    .trim().replace(/\\s+/g, " ").slice(0, 16) || "Pêcheur";
+    .replace(/[<>\u0000-\u001f\u007f]/g, "")
+    .trim().replace(/\s+/g, " ").slice(0, 16) || "Pêcheur";
 }
 
 export type CatchInput =
