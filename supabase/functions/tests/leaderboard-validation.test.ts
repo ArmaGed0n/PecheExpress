@@ -35,7 +35,7 @@ Deno.test("rejects malformed player IDs and non-object request bodies", () => {
 });
 
 Deno.test("cleans pseudo safely and caps its length", () => {
-  assert(cleanPseudo("  <Pêcheur>\\n  test  ") === "Pêcheur test", "markup/control characters should be removed");
+  assert(cleanPseudo("  <Pêcheur>\n  test  ") === "Pêcheur test", "markup/control characters should be removed");
   assert(cleanPseudo("abcdefghijklmnopqr").length === 16, "pseudo should be capped at 16 characters");
 });
 
