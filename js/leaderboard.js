@@ -193,7 +193,7 @@
   async function postCatch(item) {
     const response = await fetch(API, {
       method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify({ playerId, pseudo: item.pseudo, fishId: item.fishId, weightCm: item.weightCm, level: item.level, xp: item.xp })
+      body: JSON.stringify({ playerId, pseudo: item.pseudo, fishId: item.fishId, weightCm: item.weightCm })
     });
     const data = await response.json().catch(() => ({}));
     if (response.status === 429) { const error = new Error("rate_limited"); error.retryAfter = 3200; throw error; }
@@ -240,9 +240,7 @@
     state.queue.push({
       pseudo: cleanPseudo(d.pseudo || getPseudo()),
       fishId: d.fishId,
-      weightCm: Math.floor(Number(d.weightCm)),
-      ...(Number.isInteger(Number(d.level)) && Number.isInteger(Number(d.xp))
-        ? { level: Number(d.level), xp: Number(d.xp) } : {})
+      weightCm: Math.floor(Number(d.weightCm))
     });
     state.queue = state.queue.slice(-100); writeQueue(); flushQueue();
   });
