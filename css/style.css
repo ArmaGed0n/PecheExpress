@@ -930,3 +930,50 @@ body.fighting #hud-card { opacity: 0; pointer-events: none; }
 /* ===== Aucune bande blanche : tout ce que le système dessine autour du jeu reste sombre ===== */
 html { color-scheme: dark; background-color: #080d1a; }
 body { background-color: #080d1a; overscroll-behavior: none; }
+
+
+/* ===== Affichage mobile immersif et zones de sécurité ===== */
+html, body {
+  min-height: 100%;
+  min-height: 100dvh;
+  width: 100%;
+  overscroll-behavior: none;
+}
+#game-container {
+  width: 100%;
+  width: 100vw;
+  height: 100%;
+  height: 100dvh;
+  max-width: 520px;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+#hud {
+  padding-left: max(12px, calc(12px + env(safe-area-inset-left)));
+  padding-right: max(12px, calc(12px + env(safe-area-inset-right)));
+}
+#top-buttons {
+  right: max(16px, calc(16px + env(safe-area-inset-right)));
+}
+#skins-btn.bag-btn {
+  right: max(16px, calc(16px + env(safe-area-inset-right)));
+}
+#action-btn-container {
+  padding-left: max(24px, calc(24px + env(safe-area-inset-left)));
+  padding-right: max(24px, calc(24px + env(safe-area-inset-right)));
+}
+#canvas-container, #gameCanvas {
+  min-width: 0;
+  min-height: 0;
+}
+@media (max-height: 560px) and (orientation: landscape) {
+  #hud { padding-top: max(6px, env(safe-area-inset-top)); }
+  #hud-card { padding-top: 4px; padding-bottom: 4px; }
+  #hud-av { width: 48px; height: 48px; }
+  #top-buttons { top: max(8px, calc(env(safe-area-inset-top) + 8px)); right: max(10px, calc(10px + env(safe-area-inset-right))); gap: 6px; }
+  #top-buttons .icon-btn { width: 38px; height: 38px; }
+  #action-btn-container { bottom: max(8px, env(safe-area-inset-bottom)); }
+  #action-btn-container .btn-main { height: 52px; max-width: 280px; font-size: 16px; }
+  #skins-btn.bag-btn { width: 48px; height: 48px; right: max(10px, calc(10px + env(safe-area-inset-right))); bottom: calc(max(8px, env(safe-area-inset-bottom)) + 54px); }
+  #skins-btn.bag-btn img { width: 34px; }
+}
