@@ -59,7 +59,7 @@ export function parseLeaderboardParams(url: URL): LeaderboardParams {
   if (!["all", "weekly"].includes(period)) {
     return { ok: false, error: "Période inconnue." };
   }
-  if (!/^\\d{1,6}$/.test(rawLimit)) {
+  if (!/^\d{1,6}$/.test(rawLimit)) {
     return { ok: false, error: "Limite invalide." };
   }
   const requested = Number(rawLimit);
