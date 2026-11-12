@@ -1,4 +1,4 @@
-/* Classement en ligne — Netlify Functions. Les scores sont calculés côté serveur à partir des événements de capture. */
+/* Classement en ligne — Supabase Edge Function. Le serveur recalcule la progression et valide chaque capture. */
 (() => {
   "use strict";
   const API = String(window.PECHE_EXPRESS_API || "").trim().replace(/\/+$/, "");
@@ -17,7 +17,7 @@
   const status = document.getElementById("leaderboard-status");
   const pseudoInput = document.getElementById("leaderboard-pseudo");
   const savePseudoButton = document.getElementById("leaderboard-save-pseudo");
-  const state = { category: "level", period: "all", loading: false, queue: [], flushTimer: null };
+  const state = { category: "level", period: "all", loading: false, queue: [], flushTimer: null, retryAttempts: 0 };
 
   function getPlayerId() {
     try {
@@ -196,7 +196,7 @@
       body: JSON.stringify({ playerId, pseudo: item.pseudo, fishId: item.fishId, weightCm: item.weightCm })
     });
     const data = await response.json().catch(() => ({}));
-    if (response.status === 429) { const error = new Error("rate_limited"); error.retryAfter = 3200; throw error; }
+    if (response.status === 429) { const error = new Error("rate_limited"); const seconds = Number(response.headers.get("Retry-After")); error.retryAfter = Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 3200; throw error; }
     if (!response.ok) {
       const error = new Error(data.error || "Envoi du score impossible.");
       // refus définitif du serveur (ex. 400 capture invalide) : on abandonne cette prise au lieu de bloquer la file
@@ -207,7 +207,14 @@
     return data;
   }
   function readQueue() {
-    try { const parsed = JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]"); return Array.isArray(parsed) ? parsed.slice(-100) : []; } catch (_) { return []; }
+    try {
+      const parsed = JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(item => item && typeof item === "object"
+        && typeof item.fishId === "string" && Number.isFinite(Number(item.weightCm)))
+        .slice(-100)
+        .map(item => ({ pseudo: cleanPseudo(item.pseudo), fishId: item.fishId, weightCm: Math.floor(Number(item.weightCm)) }));
+    } catch (_) { return []; }
   }
   function writeQueue() { try { localStorage.setItem(QUEUE_KEY, JSON.stringify(state.queue.slice(-100))); } catch (_) {} }
   async function flushQueue() {
@@ -216,6 +223,7 @@
     const item = state.queue[0];
     try {
       await postCatch(item);
+      state.retryAttempts = 0;
       state.queue.shift(); writeQueue();
       scheduleSync(1500);
       if (modal.classList.contains("active")) loadLeaderboard();
@@ -227,8 +235,11 @@
       } else if (error.permanent) {
         state.queue.shift(); writeQueue();
         if (state.queue.length) state.flushTimer = setTimeout(() => { state.flushTimer = null; flushQueue(); }, 3200);
-      } else {
-        if (navigator.onLine) console.warn("Pêche Express : envoi du classement différé.", error);
+      } else if (navigator.onLine) {
+        console.warn("Pêche Express : envoi du classement différé.", error);
+        state.retryAttempts = Math.min(5, state.retryAttempts + 1);
+        const delay = Math.min(60000, 3000 * (2 ** (state.retryAttempts - 1)));
+        state.flushTimer = setTimeout(() => { state.flushTimer = null; flushQueue(); }, delay);
       }
     }
   }
