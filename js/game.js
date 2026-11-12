@@ -788,6 +788,14 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
       ctx.beginPath(); ctx.ellipse(boatX, boatY + 8, 48, 10, 0, 0, Math.PI * 2); ctx.fill();
 
+      if (state.equippedSkins.boat === "boat_duck") {
+        ctx.fillStyle = "#ffd447"; ctx.strokeStyle = "#9b6b00"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.ellipse(boatX, boatY - 3, 48, 15, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(boatX + 30, boatY - 20, 12, 17, -0.25, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#ff8a24"; ctx.beginPath(); ctx.moveTo(boatX + 37, boatY - 17); ctx.lineTo(boatX + 55, boatY - 12); ctx.lineTo(boatX + 38, boatY - 8); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#172033"; ctx.beginPath(); ctx.arc(boatX + 32, boatY - 26, 2.4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.65)"; ctx.beginPath(); ctx.ellipse(boatX - 8, boatY - 7, 19, 3, 0, 0, Math.PI * 2); ctx.fill();
+      } else {
       ctx.fillStyle = "#5c3d2e";
       ctx.beginPath();
       ctx.moveTo(boatX - 45, boatY - 8);
@@ -795,6 +803,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       ctx.quadraticCurveTo(boatX, boatY - 2, boatX - 45, boatY - 8);
       ctx.fill();
       ctx.strokeStyle = "#3d2314"; ctx.lineWidth = 2; ctx.stroke();
+      }
 
       ctx.fillStyle = "#ffd166";
       ctx.beginPath(); ctx.arc(boatX - 38, boatY - 12, 4, 0, Math.PI * 2); ctx.fill();
@@ -807,11 +816,20 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       { const cs = SKINS.character.find(c => c.id === charSkin); ctx.fillStyle = (cs && cs.color) || "#06d6a0"; }
       ctx.fillRect(boatX - 8, boatY - 28, 16, 20);
 
+      if (charSkin === "char_duck") {
+        ctx.fillStyle = "#ffd447"; ctx.strokeStyle = "#9b6b00"; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.ellipse(boatX, boatY - 34, 9, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#ff8a24"; ctx.beginPath(); ctx.moveTo(boatX + 6, boatY - 33); ctx.lineTo(boatX + 16, boatY - 30); ctx.lineTo(boatX + 6, boatY - 28); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#172033"; ctx.beginPath(); ctx.arc(boatX + 3, boatY - 37, 1.3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#f5f7fa"; ctx.beginPath(); ctx.ellipse(boatX, boatY - 43, 10, 3, 0, Math.PI, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#2d6a9f"; ctx.fillRect(boatX - 8, boatY - 45, 16, 3);
+      } else {
       ctx.fillStyle = "#ffdbac"; ctx.beginPath(); ctx.arc(boatX, boatY - 33, 8, 0, Math.PI * 2); ctx.fill();
+      }
 
       if (charSkin === "char_pirate") {
         ctx.fillStyle = "#111"; ctx.fillRect(boatX - 12, boatY - 43, 24, 6); ctx.fillRect(boatX - 7, boatY - 48, 14, 6);
-      } else {
+      } else if (charSkin !== "char_duck") {
         ctx.fillStyle = "#2a3d45"; ctx.beginPath(); ctx.arc(boatX, boatY - 35, 10, Math.PI, Math.PI * 2); ctx.fill();
       }
 
@@ -2001,20 +2019,22 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       { id: "boat_neon", name: "Hovercraft Néon", price: 0, unlocked: false },
       { id: "boat_gold", name: "Yacht Doré", price: 0, unlocked: false }
     ];
-    SKINS.character.push({ id: "char_marin", name: "Pêcheur Marin", price: 0, unlocked: false });
+    SKINS.character.push({ id: "char_marin", name: "Pêcheur Marin", price: 0, unlocked: false }, { id: "char_duck", name: "Capitaine Canard", price: 0, unlocked: false, color: "#f4c542" });
     SKINS.rod.push({ id: "rod_bamboo", name: "Canne Bambou", price: 0, unlocked: false, color: "#c9a66b" });
     SKINS.lure.push({ id: "lure_spoon", name: "Cuillère", price: 0, unlocked: false });
     SKINS.boat.push(
       { id: "boat_kayak", name: "Kayak Rapide", price: 0, unlocked: false },
       { id: "boat_chalutier", name: "Chalutier Rouge", price: 0, unlocked: false },
       { id: "boat_voilier", name: "Voilier Azur", price: 0, unlocked: false },
-      { id: "boat_fantome", name: "Vaisseau Fantôme", price: 0, unlocked: false }
+      { id: "boat_fantome", name: "Vaisseau Fantôme", price: 0, unlocked: false },
+      { id: "boat_duck", name: "Bateau Canard", price: 0, unlocked: false }
     );
     SKINS.rod.push(
       { id: "rod_fibre", name: "Canne Fibre Verte", price: 0, unlocked: false, color: "#78d246" },
       { id: "rod_titane", name: "Canne Titane", price: 0, unlocked: false, color: "#c8d2e0" },
       { id: "rod_cristal", name: "Canne Cristal de Glace", price: 0, unlocked: false, color: "#bdebff" },
-      { id: "rod_magma", name: "Canne Magma", price: 0, unlocked: false, color: "#ff6e14" }
+      { id: "rod_magma", name: "Canne Magma", price: 0, unlocked: false, color: "#ff6e14" },
+      { id: "rod_duck", name: "Canne Bec Doré", price: 0, unlocked: false, color: "#ffb703" }
     );
     SKINS.lure.push(
       { id: "lure_mouche", name: "Mouche Artificielle", price: 0, unlocked: false },
@@ -2023,7 +2043,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
     );
     const ITEM_META = {
       char_classic: { r: "commune", e: "🧑‍🎣", color: "#06d6a0" }, char_marin: { r: "commune", e: "⚓", color: "#118ab2" },
-      char_pirate: { r: "rare", e: "🏴‍☠️", color: "#ef476f" }, char_cyber: { r: "legendaire", e: "🤖", color: "#8338ec" },
+      char_pirate: { r: "rare", e: "🏴‍☠️", color: "#ef476f" }, char_cyber: { r: "legendaire", e: "🤖", color: "#8338ec" }, char_duck: { r: "rare", e: "🦆", color: "#f4c542" },
       rod_wood: { r: "commune", e: "🎣", bonus: 0 }, rod_bamboo: { r: "commune", e: "🎋", bonus: 0.02 },
       rod_carbon: { r: "rare", e: "🎣", bonus: 0.05 }, rod_neon: { r: "legendaire", e: "⚡", bonus: 0.09 },
       lure_classic: { r: "commune", e: "🔴", gold: 1 }, lure_spoon: { r: "commune", e: "🥄", gold: 1.05 },
@@ -2031,13 +2051,13 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
     };
     Object.assign(ITEM_META, {
       boat_classic: { r: "commune", e: "🛶" }, boat_pneu: { r: "commune", e: "🚤" }, boat_viking: { r: "rare", e: "🐉" },
-      boat_pirate: { r: "rare", e: "🏴‍☠️" }, boat_neon: { r: "legendaire", e: "⚡" }, boat_gold: { r: "legendaire", e: "🛥️" }
+      boat_pirate: { r: "rare", e: "🏴‍☠️" }, boat_neon: { r: "legendaire", e: "⚡" }, boat_gold: { r: "legendaire", e: "🛥️" }, boat_duck: { r: "legendaire", e: "🦆" }
     });
     Object.assign(ITEM_META, {
       boat_kayak: { r: "commune", e: "🛶" }, boat_chalutier: { r: "rare", e: "🚢" },
       boat_voilier: { r: "rare", e: "⛵" }, boat_fantome: { r: "legendaire", e: "👻" },
       rod_fibre: { r: "commune", e: "🎣", bonus: 0.03 }, rod_titane: { r: "rare", e: "🎣", bonus: 0.07 },
-      rod_cristal: { r: "rare", e: "❄️", bonus: 0.08 }, rod_magma: { r: "legendaire", e: "🔥", bonus: 0.11 },
+      rod_cristal: { r: "rare", e: "❄️", bonus: 0.08 }, rod_magma: { r: "legendaire", e: "🔥", bonus: 0.11 }, rod_duck: { r: "rare", e: "🪄", bonus: 0.08, color: "#ffb703" },
       lure_mouche: { r: "commune", e: "🪰", gold: 1.08 }, lure_crevette: { r: "rare", e: "🦐", gold: 1.2 },
       lure_meduse: { r: "legendaire", e: "🪼", gold: 1.35 }
     });
@@ -2163,7 +2183,15 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       { id: "lure", label: "Leurres", img: "lure_duck" },
       { id: "bait", label: "Appâts", img: "bait_worm" }
     ];
-    const spriteSrc = id => { const im = (window.SPRITES || {})[id]; return im ? im.src : ""; };
+    const duckSkinSvg = id => {
+      const svg = id === "char_duck"
+        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><ellipse cx="60" cy="91" rx="28" ry="8" fill="#243447" opacity=".25"/><path d="M35 88 Q30 62 47 55 L75 55 Q91 70 85 91Z" fill="#2d6a9f" stroke="#173d5d" stroke-width="4"/><ellipse cx="61" cy="42" rx="25" ry="28" fill="#ffd447" stroke="#9b6b00" stroke-width="4"/><path d="M78 42 L108 50 L79 59Z" fill="#ff8a24"/><circle cx="70" cy="32" r="4" fill="#172033"/><path d="M38 18 Q61 -1 84 18 L82 27 L40 27Z" fill="#f5f7fa" stroke="#8ba3b7" stroke-width="3"/><path d="M38 27 H85" stroke="#2d6a9f" stroke-width="6"/></svg>'
+        : id === "boat_duck"
+        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100"><ellipse cx="76" cy="79" rx="62" ry="9" fill="#243447" opacity=".22"/><path d="M15 54 Q80 84 137 54 Q124 86 80 88 Q34 85 15 54Z" fill="#ffd447" stroke="#9b6b00" stroke-width="4"/><ellipse cx="120" cy="34" rx="19" ry="25" fill="#ffd447" stroke="#9b6b00" stroke-width="4"/><path d="M133 38 L158 46 L132 53Z" fill="#ff8a24"/><circle cx="125" cy="24" r="4" fill="#172033"/><path d="M37 58 Q76 45 108 58" fill="none" stroke="#fff1a6" stroke-width="5" stroke-linecap="round"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100"><path d="M16 82 Q70 67 145 13" fill="none" stroke="#8a5a12" stroke-width="11" stroke-linecap="round"/><path d="M16 82 Q70 67 145 13" fill="none" stroke="#ffb703" stroke-width="7" stroke-linecap="round"/><path d="M120 18 L148 9 L139 35" fill="none" stroke="#ff8a24" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="81" r="8" fill="#ffd447" stroke="#9b6b00" stroke-width="3"/></svg>';
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    };
+    const spriteSrc = id => { const im = (window.SPRITES || {})[id]; return im ? im.src : (["char_duck","boat_duck","rod_duck"].includes(id) ? duckSkinSvg(id) : ""); };
     window.setInvTab = function (t) { invTab = t; renderSkins(); };
 
     // aperçu : bateau + pêcheur + canne + leurre équipés
