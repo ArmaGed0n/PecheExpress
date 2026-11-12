@@ -10,6 +10,7 @@
   const PID_KEY = "peche_express_leaderboard_pid_v1";        // identifiant PUBLIC du joueur (jamais l'identifiant privé)
   const SYNC_KEY = "peche_express_leaderboard_profile_v1";   // dernier profil synchronisé avec le serveur
   const PUBLIC_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const EVENT_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const SAFE_ID = /^[a-z0-9_]{1,32}$/i;
   const modal = document.getElementById("leaderboard-modal");
   if (!modal) return;
@@ -182,7 +183,7 @@
       const url = `${API}?category=${encodeURIComponent(state.category)}&period=${encodeURIComponent(state.period)}&limit=100`;
       const response = await fetch(url, { method: "GET", headers: { "Accept": "application/json" }, cache: "no-store", credentials: "same-origin" });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || (response.status === 503 ? "Le classement n'est pas encore configuré sur Netlify." : response.status === 404 ? "Le classement n'est pas installé sur ce site (fonction serveur absente)." : "Impossible de charger le classement."));
+      if (!response.ok) throw new Error(data.error || (response.status === 503 ? "Le classement Supabase n'est pas encore configuré." : response.status === 404 ? "Le classement n'est pas installé sur ce site (fonction serveur absente)." : "Impossible de charger le classement."));
       const rows = Array.isArray(data.rows) ? data.rows : [];
       if (!rows.length) setStatus("Pas encore de score. Fais une prise avec une connexion Internet pour apparaître ici.");
       else { setStatus(`${rows.length} joueur${rows.length > 1 ? "s" : ""} classé${rows.length > 1 ? "s" : ""}`); rows.forEach(addRow); }
@@ -193,7 +194,7 @@
   async function postCatch(item) {
     const response = await fetch(API, {
       method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify({ playerId, pseudo: item.pseudo, fishId: item.fishId, weightCm: item.weightCm })
+      body: JSON.stringify({ playerId, eventId: item.eventId, pseudo: item.pseudo, fishId: item.fishId, weightCm: item.weightCm })
     });
     const data = await response.json().catch(() => ({}));
     if (response.status === 429) { const error = new Error("rate_limited"); const seconds = Number(response.headers.get("Retry-After")); error.retryAfter = Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 3200; throw error; }
@@ -213,7 +214,10 @@
       return parsed.filter(item => item && typeof item === "object"
         && typeof item.fishId === "string" && Number.isFinite(Number(item.weightCm)))
         .slice(-100)
-        .map(item => ({ pseudo: cleanPseudo(item.pseudo), fishId: item.fishId, weightCm: Math.floor(Number(item.weightCm)) }));
+        .map(item => ({
+          eventId: EVENT_ID_RE.test(String(item.eventId || "")) ? String(item.eventId) : makeUuidFallback(),
+          pseudo: cleanPseudo(item.pseudo), fishId: item.fishId, weightCm: Math.floor(Number(item.weightCm))
+        }));
     } catch (_) { return []; }
   }
   function writeQueue() { try { localStorage.setItem(QUEUE_KEY, JSON.stringify(state.queue.slice(-100))); } catch (_) {} }
@@ -244,11 +248,13 @@
     }
   }
   state.queue = readQueue();
+  writeQueue(); // attribue et persiste un identifiant aux anciennes captures déjà en attente
   window.addEventListener("online", flushQueue);
   window.addEventListener("pe:fish-caught", event => {
     const d = event.detail || {};
     if (typeof d.fishId !== "string" || !Number.isFinite(Number(d.weightCm))) return;
     state.queue.push({
+      eventId: makeUuidFallback(),
       pseudo: cleanPseudo(d.pseudo || getPseudo()),
       fishId: d.fishId,
       weightCm: Math.floor(Number(d.weightCm))
