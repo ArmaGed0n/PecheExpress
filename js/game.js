@@ -490,10 +490,12 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
+    let canvasDpr = 1;
     function resizeCanvas() {
       const rect = canvas.parentElement.getBoundingClientRect();
       // Limite le DPR pour éviter un canvas démesuré sur les téléphones haute densité.
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(canvasDpr || 1, 2);
+      canvasDpr = dpr;
       const width = Math.max(1, Math.round(rect.width * dpr));
       const height = Math.max(1, Math.round(rect.height * dpr));
       if (canvas.width !== width || canvas.height !== height) {
@@ -527,8 +529,8 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       waveOffset += 0.025;
       const nowT = performance.now(); dayClock = (dayClock + Math.min(100, nowT - lastTick) / DAY_MS) % 1; lastTick = nowT; updateChips();
       const w = canvas.width; const h = canvas.height;
-      ctx.save(); ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-      const dW = w / window.devicePixelRatio; const dH = h / window.devicePixelRatio;
+      ctx.save(); ctx.scale(canvasDpr, canvasDpr);
+      const dW = w / canvasDpr; const dH = h / canvasDpr;
 
       const waterLineY = dH * 0.46;
 
@@ -938,8 +940,8 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
     function spawnConfetti() {
       for (let i = 0; i < 40; i++) {
         state.particles.push({
-          x: canvas.width / (2 * window.devicePixelRatio),
-          y: canvas.height / (2 * window.devicePixelRatio),
+          x: canvas.width / (2 * canvasDpr),
+          y: canvas.height / (2 * canvasDpr),
           vx: (Math.random() - 0.5) * 12,
           vy: (Math.random() - 0.8) * 12,
           color: ["#ffd166", "#06d6a0", "#118ab2", "#ef476f", "#8338ec"][Math.floor(Math.random() * 5)],
@@ -1139,8 +1141,8 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
         state.phase = "POWER"; state.power = 0; state.powerDir = 1; btnText.innerText = "RELÂCHER !";
       } else if (state.phase === "POWER") {
         state.phase = "FLYING"; state.castProgress = 0;
-        const dW = canvas.width / window.devicePixelRatio;
-        const waterY = (canvas.height / window.devicePixelRatio) * 0.46;
+        const dW = canvas.width / canvasDpr;
+        const waterY = (canvas.height / canvasDpr) * 0.46;
         const targetDist = dW * 0.45 + (dW * 0.45 * (state.power / 100));
         state.lureTarget = { x: targetDist, y: waterY };
         state.lurePos = { x: state.rodTip.x, y: state.rodTip.y };
