@@ -9,6 +9,7 @@ export const FISH_RANGES: Readonly<Record<string, readonly [number, number]>> = 
 
 export const PLAYER_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export const PUBLIC_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export const EVENT_ID_RE = PLAYER_ID_RE;
 
 export function cleanPseudo(value: unknown): string {
   return String(value ?? "Pêcheur").normalize("NFKC")
@@ -17,7 +18,7 @@ export function cleanPseudo(value: unknown): string {
 }
 
 export type CatchInput =
-  | { ok: true; playerId: string; pseudo: string; fishId: string; weightCm: number }
+  | { ok: true; playerId: string; pseudo: string; fishId: string; weightCm: number; eventId: string }
   | { ok: false; error: string };
 
 export function validateCatch(body: unknown): CatchInput {
@@ -27,6 +28,9 @@ export function validateCatch(body: unknown): CatchInput {
   const value = body as Record<string, unknown>;
   const playerId = typeof value.playerId === "string" ? value.playerId : "";
   if (!PLAYER_ID_RE.test(playerId)) return { ok: false, error: "Identifiant joueur invalide." };
+
+  const eventId = value.eventId === undefined ? crypto.randomUUID() : typeof value.eventId === "string" ? value.eventId : "";
+  if (!EVENT_ID_RE.test(eventId)) return { ok: false, error: "Identifiant de capture invalide." };
 
   const fishId = typeof value.fishId === "string" ? value.fishId : "";
   const range = FISH_RANGES[fishId];
@@ -38,7 +42,7 @@ export function validateCatch(body: unknown): CatchInput {
   if (!range || !Number.isSafeInteger(weightCm) || weightCm < range[0] || weightCm >= range[1]) {
     return { ok: false, error: "Capture invalide." };
   }
-  return { ok: true, playerId, pseudo: cleanPseudo(value.pseudo), fishId, weightCm };
+  return { ok: true, playerId, pseudo: cleanPseudo(value.pseudo), fishId, weightCm, eventId };
 }
 
 export type LeaderboardParams =
