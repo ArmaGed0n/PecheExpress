@@ -8,7 +8,8 @@
       "Projet : documentation technique et suppression de trois modules expérimentaux non raccordés."
     ]
   },
-"version": "1.0.26",
+  {
+    "version": "1.0.26",
     "date": "13/11/2026",
     "notes": [
       "HUD : les informations d’heure et de lieu sont remontées pour mieux dégager les cinq menus.",
