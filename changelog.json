@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.0.31",
+    "date": "2026-11-13",
+    "notes": [
+      "Correction de l’ouverture du profil du pêcheur."
+    ]
+  },
+  {
     "version": "1.0.30",
     "date": "13/11/2026",
     "notes": [
