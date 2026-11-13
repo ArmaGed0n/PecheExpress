@@ -1113,3 +1113,6 @@ html, body {
   #top-buttons .icon-btn { width: 36px; height: 36px; }
   #skins-btn.bag-btn { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 54px); }
 }
+
+/* Le sac reste au-dessus de la barre de navigation, sans recouvrir les boutons. */
+#skins-btn.bag-btn { bottom: calc(max(28px, env(safe-area-inset-bottom)) + 72px + 25px + 58px + 10px); }
