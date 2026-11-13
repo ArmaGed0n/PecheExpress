@@ -61,30 +61,45 @@
 (function () {
   if (!("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) return;
 
-  var hadController = !!navigator.serviceWorker.controller;
   var reloading = false;
   var scriptUrl = document.currentScript && document.currentScript.src;
   var workerUrl = scriptUrl ? new URL("../sw.js", scriptUrl).href : new URL("./sw.js", location.href).href;
   var workerScope = new URL("./", workerUrl).pathname;
 
-  function offerUpdate(worker) {
+  function reloadOnce() {
+    if (reloading) return;
+    reloading = true;
+    window.location.reload();
+  }
+
+  function offerUpdate(worker, firstInstall) {
     var banner = document.getElementById("update-banner");
     var button = document.getElementById("update-btn");
     var title = document.getElementById("ub-title");
-    if (!banner || !button || !worker) return;
+    if (!banner || !button) return;
+
     banner.classList.add("show");
-    if (title) title.textContent = "🎣 Mise à jour prête à installer !";
-    button.textContent = "Mettre à jour";
+    if (title) title.textContent = firstInstall
+      ? "🎣 Préparation des mises à jour terminée !"
+      : "🎣 Mise à jour prête à installer !";
+    button.textContent = firstInstall ? "Actualiser" : "Mettre à jour";
     button.disabled = false;
     button.onclick = function () {
       button.disabled = true;
-      button.textContent = "Mise à jour…";
-      worker.postMessage("SKIP_WAITING");
+      button.textContent = firstInstall ? "Actualisation…" : "Mise à jour…";
+      if (worker && worker.state !== "activated") {
+        // Écouter avant SKIP_WAITING pour ne pas manquer controllerchange.
+        navigator.serviceWorker.addEventListener("controllerchange", reloadOnce, { once: true });
+        worker.postMessage("SKIP_WAITING");
+      } else {
+        reloadOnce();
+      }
     };
   }
 
   navigator.serviceWorker.addEventListener("controllerchange", function () {
-    if (!hadController || reloading) return;
+    // Une mise à jour d'une application déjà contrôlée peut recharger automatiquement.
+    if (reloading) return;
     reloading = true;
     window.location.reload();
   });
@@ -93,21 +108,30 @@
     scope: workerScope,
     updateViaCache: "none"
   }).then(function (registration) {
-    if (registration.waiting && navigator.serviceWorker.controller) {
-      offerUpdate(registration.waiting);
-    }
-
-    registration.addEventListener("updatefound", function () {
-      var installing = registration.installing;
-      if (!installing) return;
-      installing.addEventListener("statechange", function () {
-        if (installing.state === "installed" && navigator.serviceWorker.controller) {
-          offerUpdate(registration.waiting || installing);
+    function watchInstalling(worker) {
+      if (!worker) return;
+      worker.addEventListener("statechange", function () {
+        if (worker.state !== "installed") return;
+        if (registration.waiting) {
+          offerUpdate(registration.waiting, false);
+        } else if (!navigator.serviceWorker.controller) {
+          // Première installation : pas de worker en attente, mais il faut proposer
+          // un rechargement pour que la page soit servie depuis le cache préparé.
+          offerUpdate(worker, true);
         }
       });
+    }
+
+    if (registration.waiting) {
+      offerUpdate(registration.waiting, !navigator.serviceWorker.controller);
+    }
+    if (registration.installing) watchInstalling(registration.installing);
+
+    registration.addEventListener("updatefound", function () {
+      watchInstalling(registration.installing);
     });
 
-    // Force une vérification au démarrage, sans attendre le délai automatique du navigateur.
+    // Vérification au démarrage, au retour au premier plan et au focus.
     registration.update().catch(function () {});
     document.addEventListener("visibilitychange", function () {
       if (document.visibilityState === "visible") registration.update().catch(function () {});
@@ -119,4 +143,3 @@
     console.warn("Pêche Express : impossible d'enregistrer les mises à jour hors ligne.", error);
   });
 })();
-
