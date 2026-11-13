@@ -1118,3 +1118,154 @@ html, body {
 #skins-btn.bag-btn { bottom: calc(max(28px, env(safe-area-inset-bottom)) + 72px + 25px + 58px + 10px); }
 
 @media (max-height: 560px) and (orientation: landscape) { #skins-btn.bag-btn { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 54px); } }
+
+
+/* ===== Ajustement HUD : dégager franchement la barre des cinq menus ===== */
+#info-chips {
+  bottom: calc(max(28px, env(safe-area-inset-bottom)) + 72px + 25px + 48px + 20px);
+  gap: 6px;
+}
+.info-chip {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  border-color: rgba(255, 209, 102, .2);
+  background: linear-gradient(135deg, rgba(10, 27, 48, .9), rgba(5, 14, 28, .82));
+}
+@media (max-height: 720px) and (orientation: portrait) {
+  #info-chips {
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 62px + 18px + 44px + 12px);
+  }
+}
+
+/* ===== Boutique Caisses : cartes premium, lecture plus claire ===== */
+#shop-modal .modal-header {
+  background: linear-gradient(110deg, rgba(15, 35, 60, .98), rgba(7, 17, 33, .98));
+  border-bottom: 1px solid rgba(255, 209, 102, .18);
+}
+#shop-modal .modal-title {
+  letter-spacing: .3px;
+  text-shadow: 0 2px 12px rgba(255, 190, 70, .18);
+}
+#shop-items {
+  padding: 14px 13px max(22px, env(safe-area-inset-bottom));
+  gap: 14px;
+}
+#shop-items .cs {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 14px;
+  gap: 12px;
+  border-width: 1px;
+  border-radius: 23px;
+  background:
+    radial-gradient(ellipse at 8% 0%, color-mix(in srgb, var(--cc) 23%, transparent), transparent 58%),
+    linear-gradient(155deg, rgba(23, 38, 59, .98), rgba(7, 16, 31, .98) 76%);
+  box-shadow: 0 10px 24px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
+}
+#shop-items .cs::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 150px;
+  height: 150px;
+  right: -64px;
+  top: -76px;
+  border-radius: 50%;
+  background: var(--cc);
+  opacity: .09;
+  filter: blur(2px);
+}
+#shop-items .cs-top { gap: 14px; align-items: center; }
+#shop-items .cs-img {
+  width: clamp(82px, 25vw, 108px);
+  height: clamp(88px, 27vw, 112px);
+  padding: 7px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.025));
+  border: 1px solid rgba(255,255,255,.09);
+  filter: drop-shadow(0 9px 11px rgba(0,0,0,.45));
+}
+#shop-items .cs-info h4 {
+  font-size: clamp(16px, 4.4vw, 19px);
+  letter-spacing: .1px;
+  margin-bottom: 8px;
+}
+#shop-items .cs-odds { gap: 5px; margin-bottom: 9px; }
+#shop-items .cs-odds .o {
+  padding: 4px 7px;
+  border: 1px solid rgba(255,255,255,.1);
+  font-size: 9px;
+  letter-spacing: .1px;
+}
+#shop-items .cs-odds .c { background: rgba(104,119,132,.34); color: #e1e8ef; }
+#shop-items .cs-odds .r { background: rgba(17,138,178,.28); color: #8de2ff; border-color: rgba(91,203,240,.25); }
+#shop-items .cs-odds .l { background: rgba(201,138,0,.25); color: #ffdc82; border-color: rgba(255,209,102,.3); }
+#shop-items .cs-pity {
+  padding: 8px 9px;
+  border-radius: 12px;
+  background: rgba(0,0,0,.2);
+  border: 1px solid rgba(255,255,255,.06);
+}
+#shop-items .cs-pity .bar { height: 6px; background: rgba(255,255,255,.1); }
+#shop-items .cs-pity small { display: block; margin-top: 5px; color: #c0cada; font-size: 10px; }
+#shop-items .cs-btns { gap: 9px; }
+#shop-items .cs-btns .buy-btn {
+  min-height: 44px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: 0 5px 13px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.16);
+}
+#shop-items .cs-btns .buy-btn:disabled { filter: saturate(.35); opacity: .55; }
+#shop-items .cs-loot {
+  padding: 9px 10px 7px;
+  border-radius: 13px;
+  background: rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.07);
+}
+#shop-items .cs-loot summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #d8e3f2;
+  font-size: 11px;
+  letter-spacing: .2px;
+}
+#shop-items .cs-loot summary::after { content: "＋"; color: #ffd166; font-size: 16px; }
+#shop-items .cs-loot[open] summary::after { content: "−"; }
+#shop-items .lp-row { margin-top: 10px; }
+#shop-items .lp-head { color: #d0d9e7; margin-bottom: 8px; }
+#shop-items .lp-items { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+#shop-items .lp-it {
+  min-width: 0;
+  min-height: 72px;
+  padding: 7px 3px;
+  gap: 4px;
+  border-radius: 12px;
+  background: linear-gradient(155deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+  border-color: rgba(255,255,255,.1);
+}
+#shop-items .lp-it img { height: 42px; }
+#shop-items .lp-it span { font-size: 9px; color: #e4ebf5; }
+#shop-items .lp-it.own {
+  background: linear-gradient(155deg, rgba(6,214,160,.14), rgba(6,214,160,.035));
+  border-color: rgba(6,214,160,.48);
+}
+#shop-items > .inv-note {
+  padding: 11px 13px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.07);
+  color: #aebbd0;
+  line-height: 1.45;
+  text-align: center;
+}
+@media (max-width: 370px) {
+  #shop-items .cs { padding: 11px; }
+  #shop-items .cs-img { width: 76px; height: 84px; }
+  #shop-items .cs-top { gap: 10px; }
+  #shop-items .cs-btns .buy-btn { font-size: 10px; }
+  #shop-items .lp-items { gap: 4px; }
+}
