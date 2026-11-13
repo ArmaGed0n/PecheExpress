@@ -60,7 +60,7 @@ test("tous les skins ont un rendu et les catégories restent complètes", () => 
     { char: 5, boat: 11, rod: 9, lure: 7 }
   );
   for (const id of skinIds) assert.ok(hasRenderer(id), "Aucun sprite ou SVG pour " + id);
-  assert.ok(game.includes("window.SPRITES.boat_classic = window.SPRITES.boat"));
+  assert.ok(sprites.includes("window.SPRITES.boat_classic = window.SPRITES.boat"));
   const duckRenderer = game.match(/const duckSkinSvg = id => \{([\s\S]*?)\n\s*\};/);
   assert.ok(duckRenderer, "Le rendu SVG Canard doit exister");
   assert.ok(duckRenderer[1].includes('id === "char_duck"'));
