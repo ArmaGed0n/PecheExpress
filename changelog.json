@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.0.30",
+    "date": "13/11/2026",
+    "notes": [
+      "Suppression du classement en ligne et des profils publics associés.",
+      "La progression et les sauvegardes du jeu restent locales sur chaque appareil."
+    ]
+  },
+  {
     "version": "1.0.29",
     "date": "13/11/2026",
     "notes": [

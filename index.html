@@ -6,8 +6,8 @@
   <title>Pêche Express</title>
   <meta name="theme-color" content="#080d1a">
   <meta name="color-scheme" content="dark">
-  <meta name="app-version" content="1.0.29">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="app-version" content="1.0.30">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -51,7 +51,6 @@
       <button class="icon-btn quests-icon-btn" id="quests-btn" title="Quêtes" aria-label="Quêtes"><img data-sprite="icon_quest" alt=""></button>
       <button class="icon-btn" id="shop-btn" title="Caisses"><img data-sprite="icon_shop" alt=""></button>
       <button class="icon-btn" id="spots-btn" title="Spots de pêche"><img data-sprite="icon_spots" alt=""></button>
-      <button class="icon-btn leaderboard-icon-btn" id="leaderboard-btn" title="Classement en ligne" aria-label="Classement en ligne"><img data-sprite="icon_trophy" alt=""></button>
     </div>
 
     <div id="info-chips">
@@ -181,48 +180,6 @@
       <div class="modal-body" id="spots-items"></div>
     </div>
 
-
-    <!-- Modale Classement en ligne -->
-    <div class="modal" id="leaderboard-modal" aria-labelledby="leaderboard-title" role="dialog" aria-modal="true">
-      <div class="modal-header">
-        <div class="modal-title" id="leaderboard-title"><img class="title-ic" data-sprite="icon_trophy" alt=""> Classement mondial</div>
-        <button class="close-btn" id="close-leaderboard" aria-label="Fermer le classement">&times;</button>
-      </div>
-      <div class="modal-body leaderboard-body">
-        <div class="leaderboard-banner"><img data-sprite="lb_crown" alt=""><div><b>Prends la couronne !</b><span>Les meilleurs pêcheurs du monde</span></div></div>
-        <p class="leaderboard-hint">Les scores sont partagés en ligne. Une connexion Internet est nécessaire pour les envoyer et consulter le classement.</p>
-        <label class="leaderboard-label" for="leaderboard-pseudo">Ton pseudo (16 caractères maximum)</label>
-        <div class="leaderboard-pseudo-row">
-          <input id="leaderboard-pseudo" type="text" maxlength="16" autocomplete="nickname" placeholder="Ton pseudo" aria-label="Pseudo pour le classement">
-          <button id="leaderboard-save-pseudo" type="button">Enregistrer</button>
-        </div>
-        <button class="leaderboard-customize" id="leaderboard-customize" type="button"><img class="lb-btn-ic" data-sprite="lb_crown" alt=""><span>Personnaliser mon profil (cadre, avatar, bannière…)</span></button>
-        <div class="leaderboard-section-label">Période</div>
-        <div class="filter-bar leaderboard-periods" role="group" aria-label="Période du classement">
-          <button class="filter-btn active" data-lb-period="all" type="button"><img class="lb-btn-ic" data-sprite="lb_period_all" alt=""><span>Général</span></button>
-          <button class="filter-btn" data-lb-period="weekly" type="button"><img class="lb-btn-ic" data-sprite="lb_period_week" alt=""><span>Cette semaine</span></button>
-        </div>
-        <div class="leaderboard-section-label">Catégorie</div>
-        <div class="filter-bar leaderboard-categories" role="group" aria-label="Catégorie du classement">
-          <button class="filter-btn active" data-lb-category="level" type="button"><img class="lb-btn-ic" data-sprite="lb_cat_level" alt=""><span>Niveau</span></button>
-          <button class="filter-btn" data-lb-category="fish" type="button"><img class="lb-btn-ic" data-sprite="lb_cat_fish" alt=""><span>Poissons</span></button>
-          <button class="filter-btn" data-lb-category="biggest" type="button"><img class="lb-btn-ic" data-sprite="icon_ruler" alt=""><span>Record</span></button>
-        </div>
-        <div id="leaderboard-status" class="leaderboard-status" role="status" aria-live="polite">Chargement du classement…</div>
-        <ol id="leaderboard-list" class="leaderboard-list"></ol>
-        <p class="leaderboard-footnote">Sans compte : ton identifiant anonyme est conservé sur cet appareil. Les scores envoyés après l'activation du classement sont pris en compte. Le classement est pseudonyme, pas un système anti-triche absolu.</p>
-      </div>
-    </div>
-
-    <!-- Fiche d'un joueur (ouverte depuis le classement) -->
-    <div class="modal" id="player-profile-modal" role="dialog" aria-modal="true" aria-labelledby="player-profile-title">
-      <div class="modal-header">
-        <div class="modal-title" id="player-profile-title"><img class="title-ic" data-sprite="icon_profile" alt=""> Profil du pêcheur</div>
-        <button class="close-btn" id="close-player-profile" aria-label="Fermer le profil">&times;</button>
-      </div>
-      <div class="modal-body" id="player-profile-body"></div>
-    </div>
-
     <!-- Modale Capture avec Confettis / Sparkles -->
     <div class="modal" id="catch-modal">
       <div class="fish-card">
@@ -294,10 +251,8 @@
 })();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-  <script src="js/config.js"></script>
   <script src="js/sprites.js" defer></script>
   <script src="js/game.js" defer></script>
-  <script src="js/leaderboard.js" defer></script>
 <div id="update-banner"><div class="ub-top"><span id="ub-title">🎣 Nouvelle version disponible !</span><button id="update-btn">Mettre à jour</button></div><ul id="ub-notes"></ul></div>
 <script src="js/changelog.js" defer></script>
 <script src="js/pwa.js" defer></script>

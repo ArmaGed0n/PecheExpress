@@ -1,8 +1,0 @@
-# Pêche Express — configuration Supabase CLI.
-# Le slug de production est bright-api (le nom historique de la fonction reste leaderboard).
-# L'entrypoint personnalisé permet de conserver le dossier source sans changer l'URL publique.
-project_id = "sczeztgjbzgefnwiysla"
-
-[functions.bright-api]
-verify_jwt = false
-entrypoint = "./functions/leaderboard/index.ts"

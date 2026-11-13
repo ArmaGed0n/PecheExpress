@@ -1793,31 +1793,6 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       { id: "or_orne", name: "Or royal", minLvl: 15, ix: 20.38, iy: 23.57, iw: 61.15, ih: 59.87 }
     ];
     const rankIndexOf = lvl => { let ri = 0; RANKS.forEach((r, i) => { if (lvl >= r.minLvl) ri = i; }); return ri; };
-    // Avatar encadré : l'avatar est dessiné derrière le cadre, dont l'intérieur est transparent.
-    function frameHTML(frameId, avatarId, size) {
-      const f = PROFILE_FRAMES.find(x => x.id === frameId) || PROFILE_FRAMES[0];
-      const av = /^[a-z0-9_]+$/i.test(avatarId || "") ? spriteSrc(avatarId) : "";
-      return `<div class="fa" style="--fs:${size}px"><div class="fa-in" style="left:${f.ix}%;top:${f.iy}%;width:${f.iw}%;height:${f.ih}%">${av ? `<img src="${av}" alt="">` : ""}</div><img class="fa-fr" src="${spriteSrc("frame_" + f.id)}" alt=""></div>`;
-    }
-    // Valeurs réellement affichées / envoyées : un choix non débloqué retombe sur la valeur par défaut.
-    function resolvedProfile() {
-      const p = state.profile || {}, st = profileStats(), lvl = state.level, ri = rankIndexOf(lvl);
-      const chars = SKINS.character.filter(s => s.unlocked).map(s => s.id);
-      const avatar = chars.includes(p.avatar) ? p.avatar : state.equippedSkins.character;
-      const frame = PROFILE_FRAMES.some(f => f.id === p.frame && lvl >= f.minLvl) ? p.frame : "bois";
-      const banner = SPOTS.some(s => s.id === p.banner && state.unlockedSpots[s.id]) ? p.banner : "lac";
-      const badge = Number.isInteger(p.badge) && p.badge >= 0 && p.badge <= ri ? p.badge : ri;
-      let fav = p.favFish && state.caughtFish[p.favFish] && SPECIES.some(x => x.id === p.favFish) ? p.favFish : "";
-      if (!fav) {
-        let best = 0;
-        Object.keys(state.caughtFish).forEach(id => { const r = state.caughtFish[id]; if (SPECIES.some(x => x.id === id) && r.maxWeight > best) { best = r.maxWeight; fav = id; } });
-      }
-      const favFishCm = fav ? Math.floor(Number(state.caughtFish[fav].maxWeight) || 0) : 0;
-      const title = TITLES.some(t => t.id === state.title && t.ok(st)) ? state.title : "none";
-      return { avatar, frame, banner, title, badge, favFish: fav, favFishCm };
-    }
-    let profileEventT = null;
-    function notifyProfileChanged() { clearTimeout(profileEventT); profileEventT = setTimeout(() => window.dispatchEvent(new CustomEvent("pe:profile-changed")), 900); }
     window.setProf = function (k, v) {
       if (k === "frame" && !PROFILE_FRAMES.some(f => f.id === v && state.level >= f.minLvl)) return;
       if (k === "avatar" && !SKINS.character.some(s => s.id === v && s.unlocked)) return;
@@ -1825,7 +1800,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       if (k === "badge") { v = Number(v); if (!Number.isInteger(v) || v < 0 || v > rankIndexOf(state.level)) return; }
       if (k === "favFish" && v && !state.caughtFish[v]) return;
       if (!(k in state.profile)) return;
-      state.profile[k] = v; saveGame(); updateHUD(); renderProfile(); notifyProfileChanged();
+      state.profile[k] = v; saveGame(); updateHUD(); renderProfile();
     };
 
     function profileStats() {
@@ -1838,15 +1813,16 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       return { catches, record, night, legend, species: Object.keys(state.caughtFish).length, spots: Object.keys(state.unlockedSpots).length, boss: state.stats.bossWins, quests: state.stats.questsDone };
     }
 
-    const APP_VERSION = "1.0.29";   // garde le même numéro que VERSION dans sw.js
+    const APP_VERSION = "1.0.30";   // garde le même numéro que VERSION dans sw.js
+    // Nettoyage des anciennes données locales du classement supprimé.
+    try { ["peche_express_leaderboard_player_v1", "peche_express_leaderboard_pseudo_v1", "peche_express_leaderboard_pid_v1", "peche_express_leaderboard_queue_v1", "peche_express_leaderboard_profile_v1", "peche_express_home_top3_v1"].forEach(k => localStorage.removeItem(k)); } catch (e) {}
     let deferredInstall = null;
     window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstall = e; });
     window.addEventListener("appinstalled", () => { deferredInstall = null; });
     window.installApp = () => { if (deferredInstall) { deferredInstall.prompt(); deferredInstall = null; } };
     let pfTab = "profil", pfEdit = false, saveT = null, pfImport = false;
     /* ===== Transfert de sauvegarde (changer de téléphone ou d'adresse du jeu) ===== */
-    const TRANSFER_KEYS = [SAVE_KEY, "peche_express_leaderboard_player_v1", "peche_express_leaderboard_pseudo_v1", "peche_express_leaderboard_pid_v1", "peche_express_leaderboard_queue_v1"];
-    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const TRANSFER_KEYS = [SAVE_KEY];
     function buildSaveCode() {
       saveGame();
       const keys = {};
@@ -1874,8 +1850,6 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       });
       let save; try { save = JSON.parse(out[SAVE_KEY]); } catch (e) { save = null; }
       if (!isPlainObject(save)) throw new Error("La sauvegarde du jeu est absente ou abîmée.");
-      const pk = "peche_express_leaderboard_player_v1";
-      if (out[pk] && !UUID_RE.test(out[pk])) delete out[pk];
       return out;
     }
     function applySaveImport(text) {
@@ -1887,7 +1861,6 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       try {
         try { const cur = localStorage.getItem(SAVE_KEY); if (cur) localStorage.setItem("peche_express_backup_v1", cur); } catch (e) {}
         TRANSFER_KEYS.forEach(k => { if (out[k] !== undefined) localStorage.setItem(k, out[k]); else localStorage.removeItem(k); });
-        localStorage.removeItem("peche_express_leaderboard_profile_v1");
       } catch (e) { saveLocked = false; toast("⚠️ Import impossible : stockage plein ou indisponible."); return; }
       location.reload();
     }
@@ -1913,7 +1886,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       let ri = 0; RANKS.forEach((r, i) => { if (lvl >= r.minLvl) ri = i; });
       const rk = RANKS[ri], nx = RANKS[ri + 1], maxXP = lvl * 50, pct = Math.min(100, Math.floor(state.xp / maxXP * 100));
       const t = TITLES.find(x => x.id === state.title) || TITLES[0];
-      const tabs = [["profil", "Profil", "icon_profile"], ["perso", "Perso", "lb_crown"], ["titres", "Titres", "icon_trophy"], ["reglages", "Réglages", "icon_gear"]]
+      const tabs = [["profil", "Profil", "icon_profile"], ["perso", "Perso", "icon_profile"], ["titres", "Titres", "icon_trophy"], ["reglages", "Réglages", "icon_gear"]]
         .map(x => `<button class="inv-tab ${pfTab === x[0] ? "active" : ""}" onclick="setPfTab('${x[0]}')">${pfImg(x[2])}<span>${x[1]}</span></button>`).join("");
       let body = "";
       if (pfTab === "profil") {
@@ -2311,24 +2284,6 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
     };
 
     loadGame();
-
-    window.PecheExpressLeaderboardBridge = {
-      getPseudo: () => typeof state.pseudo === "string" ? state.pseudo : "",
-      setPseudo: value => {
-        const cleaned = String(value || "").replace(/[<>\u0000-\u001f\u007f]/g, "").trim().replace(/\s+/g, " ").slice(0, 16);
-        if (!cleaned) return false;
-        state.pseudo = cleaned;
-        saveGame();
-        return true;
-      },
-      getProfile: () => resolvedProfile(),
-      openCustomize: () => { pfTab = "perso"; pfEdit = false; renderProfile(); profileModal.classList.add("active"); }
-    };
-    // Données et rendu partagés avec js/leaderboard.js (fiche joueur du classement)
-    window.PecheExpressProfileData = {
-      RANKS, TITLES: TITLES.map(t => ({ id: t.id, name: t.name })), SPECIES: SPECIES.map(f => ({ id: f.id, name: f.name, emoji: f.emoji })),
-      SPOTS: SPOTS.map(s => ({ id: s.id, name: s.name })), FRAMES: PROFILE_FRAMES, frameHTML, spriteSrc, esc, rankIndexOf
-    };
 
     if (!state.equippedSkins.boat) state.equippedSkins.boat = "boat_classic";
     render();
