@@ -689,6 +689,21 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
     };
     function spriteOK(im) { return im && im.complete && im.naturalWidth > 0; }
 
+    // Les skins Canard sont dessinés en SVG : on les charge comme de vraies
+    // images Canvas pour pouvoir les mélanger aux textures PNG sans basculer
+    // toute la scène en rendu vectoriel.
+    function getSprite(id) {
+      const SP = window.SPRITES || {};
+      const key = id || "";
+      let im = SP[key] || (key === "boat_classic" ? SP.boat : null);
+      if (im || !["char_duck", "boat_duck", "rod_duck"].includes(key)) return im || null;
+      im = new Image();
+      im.decoding = "async";
+      im.src = duckSkinSvg(key);
+      SP[key] = im;
+      return im;
+    }
+
     // Texture PNG d'un poisson (retombe sur l'emoji si absente)
     function fishIcon(f, px) {
       const im = (window.SPRITES || {})["fish_" + f.id];
@@ -701,7 +716,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       const charSkin = state.equippedSkins.character;
       const rodId = state.equippedSkins.rod;
       const boatId = state.equippedSkins.boat || "boat_classic";
-      const boatImg = SP[boatId] || SP.boat, charImg = SP[charSkin], rodImg = SP[rodId];
+      const boatImg = getSprite(boatId) || SP.boat, charImg = getSprite(charSkin), rodImg = getSprite(rodId);
       if (!spriteOK(boatImg) || !spriteOK(charImg) || !spriteOK(rodImg)) {
         return drawBoatAndFishermanVector(ctx, dW, waterY);
       }
@@ -2209,16 +2224,18 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
         : id === "boat_duck"
         ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 140"><defs><linearGradient id="rubber" x2="0" y2="1"><stop stop-color="#fff07b"/><stop offset=".55" stop-color="#ffd13e"/><stop offset="1" stop-color="#e99a16"/></linearGradient><linearGradient id="water" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><ellipse cx="104" cy="121" rx="83" ry="10" fill="#061827" opacity=".28"/><path d="M20 75 Q42 107 111 109 Q167 108 190 76 Q177 127 107 130 Q42 126 20 75Z" fill="#b56c12" stroke="#75430b" stroke-width="5"/><path d="M17 67 Q71 88 146 75 Q173 70 188 57 Q183 104 111 111 Q43 108 17 67Z" fill="url(#rubber)" stroke="#a56b12" stroke-width="5"/><path d="M31 74 Q89 94 160 75" fill="none" stroke="#fff5ad" stroke-width="6" stroke-linecap="round"/><path d="M132 68 Q139 26 163 18 Q187 15 194 41 Q200 61 179 77 Q157 85 132 68Z" fill="url(#rubber)" stroke="#a56b12" stroke-width="5"/><path d="M179 45 Q207 42 215 55 Q201 69 178 65Z" fill="#ff8a24" stroke="#b94c12" stroke-width="4"/><ellipse cx="176" cy="35" rx="5" ry="7" fill="#172033"/><circle cx="177" cy="33" r="2" fill="#fff"/><path d="M145 76 Q158 83 170 76" fill="none" stroke="#fff6bf" stroke-width="4" stroke-linecap="round"/><path d="M72 94 Q89 79 108 91 Q96 105 78 104Z" fill="#f5b92f" stroke="#b77b12" stroke-width="3"/><circle cx="89" cy="93" r="3" fill="#fff2a8"/><path d="M30 66 Q44 58 58 64" fill="none" stroke="#fff" stroke-width="3" opacity=".65"/><path d="M35 119 Q90 137 155 119" fill="none" stroke="url(#water)" stroke-width="4" stroke-linecap="round"/></svg>'
         : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 120"><defs><linearGradient id="rodGold" x2="0" y2="1"><stop stop-color="#fff2a0"/><stop offset="1" stop-color="#d78a08"/></linearGradient></defs><path d="M18 98 Q82 83 157 16" fill="none" stroke="#6b430b" stroke-width="13" stroke-linecap="round"/><path d="M18 98 Q82 83 157 16" fill="none" stroke="url(#rodGold)" stroke-width="8" stroke-linecap="round"/><path d="M130 22 L163 10 L151 42" fill="none" stroke="#ff8a24" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="97" r="10" fill="#ffd447" stroke="#9b6b00" stroke-width="4"/><path d="M46 91 Q85 79 111 56" fill="none" stroke="#fff4bb" stroke-width="2" opacity=".8"/></svg>';
+      const dimensions = id === "char_duck" ? [176, 224] : id === "boat_duck" ? [448, 200] : [512, 112];
+      svg = svg.replace("<svg xmlns=", '<svg width="' + dimensions[0] + '" height="' + dimensions[1] + '" preserveAspectRatio="none" xmlns=');
       return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     };
-    const spriteSrc = id => { const im = (window.SPRITES || {})[id]; return im ? im.src : (["char_duck","boat_duck","rod_duck"].includes(id) ? duckSkinSvg(id) : ""); };
+    const spriteSrc = id => { const im = getSprite(id); return im && im.src ? im.src : ""; };
     window.setInvTab = function (t) { invTab = t; renderSkins(); };
 
     // aperçu : bateau + pêcheur + canne + leurre équipés
     function drawInvPreview() {
       const cv = document.getElementById("inv-preview"); if (!cv) return;
       const SP = window.SPRITES || {}, eq = state.equippedSkins;
-      const boat = SP[eq.boat || "boat_classic"] || SP.boat, ch = SP[eq.character], rod = SP[eq.rod], lure = SP[eq.lure];
+      const boat = getSprite(eq.boat || "boat_classic") || SP.boat, ch = getSprite(eq.character), rod = getSprite(eq.rod), lure = getSprite(eq.lure);
       if (![boat, ch, rod, lure].every(spriteOK)) {
         if ([eq.boat, eq.character, eq.rod].some(id => ["boat_duck", "char_duck", "rod_duck"].includes(id))) {
           invTries = 0;
