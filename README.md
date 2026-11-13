@@ -49,6 +49,11 @@ Les skins `char_duck`, `boat_duck` et `rod_duck` sont dessinés en SVG dans `js/
 
 Le bouton de mise à jour active le service worker en attente ; le rechargement se fait ensuite automatiquement. Les anciennes caches PWA sont nettoyées à l'activation du nouveau service worker.
 
+## Documentation de maintenance
+
+- [Matrice et recette des skins](docs/skins-et-recette.md)
+- [Maintenance technique, modules et mises à jour PWA](docs/maintenance.md)
+
 ## Données et limites
 
 - La progression du jeu est sauvegardée dans le stockage local du navigateur. Elle n'est pas une sauvegarde cloud multi-appareils.
