@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.0.26",
+    "date": "13/11/2026",
+    "notes": [
+      "HUD : les informations d’heure et de lieu sont remontées pour mieux dégager les cinq menus.",
+      "Caisses : interface modernisée avec cartes, probabilités, garantie et aperçus du contenu plus lisibles."
+    ]
+  },
+  {
     "version": "1.0.25",
     "date": "12/11/2026",
     "notes": [
