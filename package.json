@@ -1,10 +1,6 @@
 {
   "name": "peche-express",
   "private": true,
-  "version": "1.0.27",
-  "description": "Jeu de pêche mobile (site statique GitHub Pages + classement Supabase)",
-  "scripts": {
-    "test": "node --test tests/*.test.mjs",
-    "test:skins": "node --test tests/skins.test.mjs"
-  }
+  "version": "1.0.26",
+  "description": "Jeu de pêche mobile (site statique GitHub Pages + classement Supabase)"
 }
