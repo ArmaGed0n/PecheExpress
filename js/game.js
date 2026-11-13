@@ -1851,7 +1851,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       return { catches, record, night, legend, species: Object.keys(state.caughtFish).length, spots: Object.keys(state.unlockedSpots).length, boss: state.stats.bossWins, quests: state.stats.questsDone };
     }
 
-    const APP_VERSION = "1.0.25";   // garde le même numéro que VERSION dans sw.js
+    const APP_VERSION = "1.0.27";   // garde le même numéro que VERSION dans sw.js
     let deferredInstall = null;
     window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstall = e; });
     window.addEventListener("appinstalled", () => { deferredInstall = null; });
