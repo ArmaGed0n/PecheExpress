@@ -39,11 +39,11 @@ Les tests vérifient les 100 textures PNG embarquées, les dimensions attendues 
 
 Les skins `char_duck`, `boat_duck` et `rod_duck` sont dessinés en SVG dans `js/game.js`, puis chargés comme images Canvas. Les autres skins utilisent les textures PNG.
 
-Voir aussi [la procédure de maintenance et de publication](docs/maintenance-et-publication.md) et [la recette de vérification des skins](docs/skins-et-recette.md).
+Voir aussi [la documentation de maintenance](docs/maintenance.md) et [la recette de vérification des skins](docs/skins-et-recette.md).
 
 ## Publier une mise à jour
 
-1. Incrémenter le même numéro de version dans `index.html`, `js/game.js` (`APP_VERSION`), `sw.js` (`VERSION`), `manifest.webmanifest` et `package.json`.
+1. Incrémenter le même numéro de version dans `index.html`, `js/game.js` (`APP_VERSION`), `sw.js` (`VERSION`), `manifest.webmanifest` et `package.json`, puis ajouter la version en tête de `changelog.json`.
 2. Ajouter une entrée en tête de `changelog.json` avec la version, la date et les nouveautés.
 3. Exécuter `npm test`.
 4. Ouvrir une PR et vérifier le workflow GitHub Actions.
