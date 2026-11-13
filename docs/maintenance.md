@@ -53,7 +53,7 @@ Les notes du bandeau proviennent de `changelog.json`. La progression est conserv
 
 ## Contrôle de version
 
-La version doit être identique dans cinq emplacements : métadonnée HTML, constante du jeu, constante du service worker, manifeste PWA et `package.json`. Le test de version échoue si l'un diverge.
+La version doit être identique dans six emplacements : métadonnée HTML, constante du jeu, constante du service worker, manifeste PWA, `package.json` et première entrée de `changelog.json`. Le test de version échoue si l'un diverge.
 
 ## Contrôles non automatisés
 
