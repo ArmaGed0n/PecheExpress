@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.0.29",
+    "date": "13/11/2026",
+    "notes": [
+      "Correction du bouton de mise à jour : il est aussi proposé lors de la première installation du Service Worker.",
+      "Le bouton Actualiser permet de charger le jeu depuis le nouveau cache préparé."
+    ]
+  },
+  {
     "version": "1.0.28",
     "date": "13/11/2026",
     "notes": [
