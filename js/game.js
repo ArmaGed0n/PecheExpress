@@ -1793,6 +1793,28 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       { id: "or_orne", name: "Or royal", minLvl: 15, ix: 20.38, iy: 23.57, iw: 61.15, ih: 59.87 }
     ];
     const rankIndexOf = lvl => { let ri = 0; RANKS.forEach((r, i) => { if (lvl >= r.minLvl) ri = i; }); return ri; };
+    // Rendu local du cadre et résolution des éléments de profil équipés.
+    function frameHTML(frameId, avatarId, size) {
+      const f = PROFILE_FRAMES.find(x => x.id === frameId) || PROFILE_FRAMES[0];
+      const av = /^[a-z0-9_]+$/i.test(avatarId || "") ? spriteSrc(avatarId) : "";
+      return `<div class="fa" style="--fs:${size}px"><div class="fa-in" style="left:${f.ix}%;top:${f.iy}%;width:${f.iw}%;height:${f.ih}%">${av ? `<img src="${av}" alt="">` : ""}</div><img class="fa-fr" src="${spriteSrc("frame_" + f.id)}" alt=""></div>`;
+    }
+    function resolvedProfile() {
+      const p = state.profile || {}, st = profileStats(), lvl = state.level, ri = rankIndexOf(lvl);
+      const chars = SKINS.character.filter(s => s.unlocked).map(s => s.id);
+      const avatar = chars.includes(p.avatar) ? p.avatar : state.equippedSkins.character;
+      const frame = PROFILE_FRAMES.some(f => f.id === p.frame && lvl >= f.minLvl) ? p.frame : "bois";
+      const banner = SPOTS.some(s => s.id === p.banner && state.unlockedSpots[s.id]) ? p.banner : "lac";
+      const badge = Number.isInteger(p.badge) && p.badge >= 0 && p.badge <= ri ? p.badge : ri;
+      let fav = p.favFish && state.caughtFish[p.favFish] && SPECIES.some(x => x.id === p.favFish) ? p.favFish : "";
+      if (!fav) {
+        let best = 0;
+        Object.keys(state.caughtFish).forEach(id => { const r = state.caughtFish[id]; if (SPECIES.some(x => x.id === id) && r.maxWeight > best) { best = r.maxWeight; fav = id; } });
+      }
+      const favFishCm = fav ? Math.floor(Number(state.caughtFish[fav].maxWeight) || 0) : 0;
+      const title = TITLES.some(t => t.id === state.title && t.ok(st)) ? state.title : "none";
+      return { avatar, frame, banner, title, badge, favFish: fav, favFishCm };
+    }
     window.setProf = function (k, v) {
       if (k === "frame" && !PROFILE_FRAMES.some(f => f.id === v && state.level >= f.minLvl)) return;
       if (k === "avatar" && !SKINS.character.some(s => s.id === v && s.unlocked)) return;
