@@ -1,0 +1,32 @@
+name: Project checks
+
+on:
+  push:
+    branches:
+      - main
+      - "maintenance/**"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check JavaScript syntax
+        run: |
+          for file in js/*.js sw.js; do
+            node --check "$file"
+          done
+      - name: Run project tests
+        run: npm test

@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.0.27",
+    "date": "13/11/2026",
+    "notes": [
+      "Mises à jour PWA : le service worker est enregistré, vérifié au retour dans l'application et activé après confirmation.",
+      "Maintenance : ajout de tests automatisés pour les 3 465 combinaisons d'équipement et les dimensions des textures.",
+      "Projet : documentation technique et suppression de trois modules expérimentaux non raccordés."
+    ]
+  },
+  {
     "version": "1.0.26",
     "date": "13/11/2026",
     "notes": [
