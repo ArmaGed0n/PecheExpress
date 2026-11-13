@@ -2238,6 +2238,8 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       const boat = getSprite(eq.boat || "boat_classic") || SP.boat, ch = getSprite(eq.character), rod = getSprite(eq.rod), lure = getSprite(eq.lure);
       if (![boat, ch, rod, lure].every(spriteOK)) {
         if ([eq.boat, eq.character, eq.rod].some(id => ["boat_duck", "char_duck", "rod_duck"].includes(id))) {
+          // Attendre le chargement des SVG pour afficher le vrai aperçu, pas un emoji provisoire.
+          if (invTries++ < 25) { setTimeout(drawInvPreview, 80); return; }
           invTries = 0;
           const dpr = window.devicePixelRatio || 1, W = 340, H = 190;
           cv.width = W * dpr; cv.height = H * dpr;
