@@ -14,8 +14,8 @@
     window.addEventListener("load", function () {
       if (!/^https?:$/.test(location.protocol)) return;
       var seen = null; try { seen = localStorage.getItem("pe_seen_version"); } catch (e) {}
-      try { localStorage.setItem("pe_seen_version", APP_VERSION); } catch (e) {}
-      if (!seen || seen === APP_VERSION) return;
+      try { localStorage.setItem("pe_seen_version", currentVersion()); } catch (e) {}
+      if (!seen || seen === currentVersion()) return;
       load().then(function (list) {
         var items = list.filter(function (e) { return cmp(e.version, seen) > 0 && cmp(e.version, currentVersion()) <= 0; }); if (!items.length) return;
         var body = document.getElementById("news-body"); body.innerHTML = "";
