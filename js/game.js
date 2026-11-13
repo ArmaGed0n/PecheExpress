@@ -789,12 +789,21 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       ctx.beginPath(); ctx.ellipse(boatX, boatY + 8, 48, 10, 0, 0, Math.PI * 2); ctx.fill();
 
       if (state.equippedSkins.boat === "boat_duck") {
-        ctx.fillStyle = "#ffd447"; ctx.strokeStyle = "#9b6b00"; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.ellipse(boatX, boatY - 3, 48, 15, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.beginPath(); ctx.ellipse(boatX + 30, boatY - 20, 12, 17, -0.25, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "#ff8a24"; ctx.beginPath(); ctx.moveTo(boatX + 37, boatY - 17); ctx.lineTo(boatX + 55, boatY - 12); ctx.lineTo(boatX + 38, boatY - 8); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = "#172033"; ctx.beginPath(); ctx.arc(boatX + 32, boatY - 26, 2.4, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "rgba(255,255,255,.65)"; ctx.beginPath(); ctx.ellipse(boatX - 8, boatY - 7, 19, 3, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.save();
+        ctx.shadowColor = "rgba(255,190,40,.38)"; ctx.shadowBlur = 13;
+        ctx.fillStyle = "#b96b12"; ctx.strokeStyle = "#75430b"; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(boatX - 49, boatY - 8); ctx.quadraticCurveTo(boatX - 28, boatY + 19, boatX + 24, boatY + 18); ctx.quadraticCurveTo(boatX + 51, boatY + 13, boatX + 53, boatY - 8); ctx.quadraticCurveTo(boatX + 5, boatY + 7, boatX - 49, boatY - 8); ctx.fill(); ctx.stroke();
+        ctx.shadowBlur = 0; ctx.fillStyle = "#ffd447"; ctx.strokeStyle = "#a56b12"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(boatX - 48, boatY - 12); ctx.quadraticCurveTo(boatX - 8, boatY + 8, boatX + 28, boatY - 2); ctx.quadraticCurveTo(boatX + 48, boatY - 8, boatX + 52, boatY - 19); ctx.quadraticCurveTo(boatX + 42, boatY + 8, boatX + 4, boatY + 9); ctx.quadraticCurveTo(boatX - 33, boatY + 7, boatX - 48, boatY - 12); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#fff1a6"; ctx.beginPath(); ctx.ellipse(boatX - 5, boatY - 7, 22, 3, -.08, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#f2b92e"; ctx.beginPath(); ctx.ellipse(boatX + 27, boatY - 25, 12, 17, -.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#ffd447"; ctx.beginPath(); ctx.ellipse(boatX + 30, boatY - 34, 11, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#ff8a24"; ctx.beginPath(); ctx.moveTo(boatX + 37, boatY - 31); ctx.quadraticCurveTo(boatX + 56, boatY - 29, boatX + 55, boatY - 22); ctx.quadraticCurveTo(boatX + 43, boatY - 19, boatX + 36, boatY - 25); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#172033"; ctx.beginPath(); ctx.arc(boatX + 34, boatY - 39, 2.2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(boatX + 34.8, boatY - 39.8, .8, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#f4c542"; ctx.beginPath(); ctx.ellipse(boatX - 4, boatY - 2, 12, 5, -.2, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,.65)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(boatX - 38, boatY - 10); ctx.quadraticCurveTo(boatX - 7, boatY - 1, boatX + 14, boatY - 5); ctx.stroke();
+        ctx.restore();
       } else {
       ctx.fillStyle = "#5c3d2e";
       ctx.beginPath();
@@ -817,12 +826,23 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       ctx.fillRect(boatX - 8, boatY - 28, 16, 20);
 
       if (charSkin === "char_duck") {
-        ctx.fillStyle = "#ffd447"; ctx.strokeStyle = "#9b6b00"; ctx.lineWidth = 1.2;
-        ctx.beginPath(); ctx.ellipse(boatX, boatY - 34, 9, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "#ff8a24"; ctx.beginPath(); ctx.moveTo(boatX + 6, boatY - 33); ctx.lineTo(boatX + 16, boatY - 30); ctx.lineTo(boatX + 6, boatY - 28); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = "#172033"; ctx.beginPath(); ctx.arc(boatX + 3, boatY - 37, 1.3, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#f5f7fa"; ctx.beginPath(); ctx.ellipse(boatX, boatY - 43, 10, 3, 0, Math.PI, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#2d6a9f"; ctx.fillRect(boatX - 8, boatY - 45, 16, 3);
+        ctx.save();
+        // Petit uniforme de capitaine, avec col marin et ailes visibles.
+        ctx.fillStyle = "#17466d"; ctx.strokeStyle = "#102f4b"; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.roundRect(boatX - 10, boatY - 29, 20, 22, 5); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#f4f2e7"; ctx.beginPath(); ctx.moveTo(boatX - 7, boatY - 28); ctx.lineTo(boatX, boatY - 19); ctx.lineTo(boatX + 7, boatY - 28); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#f4c542"; ctx.beginPath(); ctx.arc(boatX, boatY - 16, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#ffd447"; ctx.strokeStyle = "#a56b12"; ctx.lineWidth = 1.3;
+        ctx.beginPath(); ctx.ellipse(boatX - 9, boatY - 18, 5, 8, -.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(boatX, boatY - 38, 10, 9, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#ff8a24"; ctx.beginPath(); ctx.moveTo(boatX + 7, boatY - 38); ctx.quadraticCurveTo(boatX + 19, boatY - 36, boatX + 18, boatY - 32); ctx.quadraticCurveTo(boatX + 9, boatY - 29, boatX + 6, boatY - 34); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#172033"; ctx.beginPath(); ctx.arc(boatX + 4, boatY - 41, 1.6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(boatX + 4.5, boatY - 41.5, .6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#f5f7fb"; ctx.strokeStyle = "#8ba3b7"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.ellipse(boatX, boatY - 47, 10, 3, 0, Math.PI, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#245a84"; ctx.fillRect(boatX - 9, boatY - 48, 18, 2.5);
+        ctx.strokeStyle = "#f4c542"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(boatX - 4, boatY - 46); ctx.lineTo(boatX, boatY - 44); ctx.lineTo(boatX + 4, boatY - 46); ctx.stroke();
+        ctx.restore();
       } else {
       ctx.fillStyle = "#ffdbac"; ctx.beginPath(); ctx.arc(boatX, boatY - 33, 8, 0, Math.PI * 2); ctx.fill();
       }
@@ -2185,10 +2205,10 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
     ];
     const duckSkinSvg = id => {
       const svg = id === "char_duck"
-        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><ellipse cx="60" cy="91" rx="28" ry="8" fill="#243447" opacity=".25"/><path d="M35 88 Q30 62 47 55 L75 55 Q91 70 85 91Z" fill="#2d6a9f" stroke="#173d5d" stroke-width="4"/><ellipse cx="61" cy="42" rx="25" ry="28" fill="#ffd447" stroke="#9b6b00" stroke-width="4"/><path d="M78 42 L108 50 L79 59Z" fill="#ff8a24"/><circle cx="70" cy="32" r="4" fill="#172033"/><path d="M38 18 Q61 -1 84 18 L82 27 L40 27Z" fill="#f5f7fa" stroke="#8ba3b7" stroke-width="3"/><path d="M38 27 H85" stroke="#2d6a9f" stroke-width="6"/></svg>'
+        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160"><defs><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff18a"/><stop offset="1" stop-color="#e9a91e"/></linearGradient><linearGradient id="coat" x2="0" y2="1"><stop stop-color="#3e8ec0"/><stop offset="1" stop-color="#17466d"/></linearGradient></defs><ellipse cx="80" cy="143" rx="39" ry="9" fill="#061827" opacity=".35"/><path d="M43 135 Q38 106 55 91 L105 91 Q122 107 117 135Z" fill="url(#coat)" stroke="#102f4b" stroke-width="5"/><path d="M61 94 L80 112 L99 94" fill="#f7f4e8" stroke="#d8e2e8" stroke-width="3"/><path d="M76 111 L84 111 L91 137 L69 137Z" fill="#f4c542"/><path d="M49 105 Q31 111 39 128 L54 122" fill="#f4c542" stroke="#a56b12" stroke-width="4"/><path d="M111 105 Q129 111 121 128 L106 122" fill="#f4c542" stroke="#a56b12" stroke-width="4"/><ellipse cx="80" cy="62" rx="34" ry="38" fill="url(#gold)" stroke="#a56b12" stroke-width="4"/><ellipse cx="69" cy="74" rx="12" ry="8" fill="#fff7c9" opacity=".55"/><path d="M102 62 Q126 62 133 73 Q120 83 101 78Z" fill="#ff8a24" stroke="#b94c12" stroke-width="3"/><ellipse cx="94" cy="51" rx="5" ry="7" fill="#172033"/><circle cx="95" cy="49" r="1.7" fill="#fff"/><path d="M48 38 Q80 4 112 38 L108 48 L52 48Z" fill="#f6f7fb" stroke="#9aafc0" stroke-width="4"/><path d="M43 47 Q80 40 117 47 L111 55 Q80 50 49 56Z" fill="#245a84" stroke="#153d60" stroke-width="3"/><path d="M53 43 Q80 31 107 43" fill="none" stroke="#fff" stroke-width="3" opacity=".8"/><path d="M58 137 L55 147 L75 147 L77 137 M84 137 L86 147 L106 147 L101 137" fill="#ff8a24" stroke="#b94c12" stroke-width="3"/></svg>'
         : id === "boat_duck"
-        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100"><ellipse cx="76" cy="79" rx="62" ry="9" fill="#243447" opacity=".22"/><path d="M15 54 Q80 84 137 54 Q124 86 80 88 Q34 85 15 54Z" fill="#ffd447" stroke="#9b6b00" stroke-width="4"/><ellipse cx="120" cy="34" rx="19" ry="25" fill="#ffd447" stroke="#9b6b00" stroke-width="4"/><path d="M133 38 L158 46 L132 53Z" fill="#ff8a24"/><circle cx="125" cy="24" r="4" fill="#172033"/><path d="M37 58 Q76 45 108 58" fill="none" stroke="#fff1a6" stroke-width="5" stroke-linecap="round"/></svg>'
-        : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100"><path d="M16 82 Q70 67 145 13" fill="none" stroke="#8a5a12" stroke-width="11" stroke-linecap="round"/><path d="M16 82 Q70 67 145 13" fill="none" stroke="#ffb703" stroke-width="7" stroke-linecap="round"/><path d="M120 18 L148 9 L139 35" fill="none" stroke="#ff8a24" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="81" r="8" fill="#ffd447" stroke="#9b6b00" stroke-width="3"/></svg>';
+        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 140"><defs><linearGradient id="rubber" x2="0" y2="1"><stop stop-color="#fff07b"/><stop offset=".55" stop-color="#ffd13e"/><stop offset="1" stop-color="#e99a16"/></linearGradient><linearGradient id="water" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><ellipse cx="104" cy="121" rx="83" ry="10" fill="#061827" opacity=".28"/><path d="M20 75 Q42 107 111 109 Q167 108 190 76 Q177 127 107 130 Q42 126 20 75Z" fill="#b56c12" stroke="#75430b" stroke-width="5"/><path d="M17 67 Q71 88 146 75 Q173 70 188 57 Q183 104 111 111 Q43 108 17 67Z" fill="url(#rubber)" stroke="#a56b12" stroke-width="5"/><path d="M31 74 Q89 94 160 75" fill="none" stroke="#fff5ad" stroke-width="6" stroke-linecap="round"/><path d="M132 68 Q139 26 163 18 Q187 15 194 41 Q200 61 179 77 Q157 85 132 68Z" fill="url(#rubber)" stroke="#a56b12" stroke-width="5"/><path d="M179 45 Q207 42 215 55 Q201 69 178 65Z" fill="#ff8a24" stroke="#b94c12" stroke-width="4"/><ellipse cx="176" cy="35" rx="5" ry="7" fill="#172033"/><circle cx="177" cy="33" r="2" fill="#fff"/><path d="M145 76 Q158 83 170 76" fill="none" stroke="#fff6bf" stroke-width="4" stroke-linecap="round"/><path d="M72 94 Q89 79 108 91 Q96 105 78 104Z" fill="#f5b92f" stroke="#b77b12" stroke-width="3"/><circle cx="89" cy="93" r="3" fill="#fff2a8"/><path d="M30 66 Q44 58 58 64" fill="none" stroke="#fff" stroke-width="3" opacity=".65"/><path d="M35 119 Q90 137 155 119" fill="none" stroke="url(#water)" stroke-width="4" stroke-linecap="round"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 120"><defs><linearGradient id="rodGold" x2="0" y2="1"><stop stop-color="#fff2a0"/><stop offset="1" stop-color="#d78a08"/></linearGradient></defs><path d="M18 98 Q82 83 157 16" fill="none" stroke="#6b430b" stroke-width="13" stroke-linecap="round"/><path d="M18 98 Q82 83 157 16" fill="none" stroke="url(#rodGold)" stroke-width="8" stroke-linecap="round"/><path d="M130 22 L163 10 L151 42" fill="none" stroke="#ff8a24" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="97" r="10" fill="#ffd447" stroke="#9b6b00" stroke-width="4"/><path d="M46 91 Q85 79 111 56" fill="none" stroke="#fff4bb" stroke-width="2" opacity=".8"/></svg>';
       return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     };
     const spriteSrc = id => { const im = (window.SPRITES || {})[id]; return im ? im.src : (["char_duck","boat_duck","rod_duck"].includes(id) ? duckSkinSvg(id) : ""); };
