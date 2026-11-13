@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.0.28",
+    "date": "13/11/2026",
+    "notes": [
+      "Mise à jour automatique : l’application vérifie les nouvelles versions à l’ouverture et au retour au premier plan.",
+      "Un bouton permet d’installer la nouvelle version puis de recharger le jeu automatiquement."
+    ]
+  },
+  {
     "version": "1.0.27",
     "date": "13/11/2026",
     "notes": [
