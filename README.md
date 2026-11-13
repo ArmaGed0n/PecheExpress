@@ -39,6 +39,8 @@ Les tests vérifient les 100 textures PNG embarquées, les dimensions attendues 
 
 Les skins `char_duck`, `boat_duck` et `rod_duck` sont dessinés en SVG dans `js/game.js`, puis chargés comme images Canvas. Les autres skins utilisent les textures PNG.
 
+Voir aussi [la procédure de maintenance et de publication](docs/maintenance-et-publication.md) et [la recette de vérification des skins](docs/skins-et-recette.md).
+
 ## Publier une mise à jour
 
 1. Incrémenter le même numéro de version dans `index.html`, `js/game.js` (`APP_VERSION`), `sw.js` (`VERSION`), `manifest.webmanifest` et `package.json`.
