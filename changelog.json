@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.0.27",
+    "date": "13/11/2026",
+    "notes": [
+      "Journal de pêche : correction des filtres Tous, Attrapés et Manquants.",
+      "Les filtres du journal n'affectent plus les boutons des autres menus."
+    ]
+  },
+  {
     "version": "1.0.25",
     "date": "12/11/2026",
     "notes": [

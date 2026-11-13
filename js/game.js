@@ -1375,12 +1375,14 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
     };
 
 
-    function setDexFilter(filter, evt) {
+    // Exposé sur window car les filtres du journal utilisent des onclick HTML.
+    window.setDexFilter = function (filter, evt) {
       state.dexFilter = filter;
-      document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"));
-      if (evt) evt.target.classList.add("active");
+      document.querySelectorAll("#dex-modal .filter-bar .filter-btn").forEach(btn => btn.classList.remove("active"));
+      const button = evt && (evt.currentTarget || evt.target);
+      if (button && button.classList) button.classList.add("active");
       renderDex();
-    }
+    };
 
     let dexRarity = "all";
     const DEX_RL = { commune: "Commun", rare: "Rare", epique: "Épique", legendaire: "Légendaire" };
