@@ -57,3 +57,66 @@
   });
 })();
 
+/* Mises à jour PWA : détecte les nouvelles versions et propose de les appliquer. */
+(function () {
+  if (!("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) return;
+
+  var hadController = !!navigator.serviceWorker.controller;
+  var reloading = false;
+  var scriptUrl = document.currentScript && document.currentScript.src;
+  var workerUrl = scriptUrl ? new URL("../sw.js", scriptUrl).href : new URL("./sw.js", location.href).href;
+  var workerScope = new URL("./", workerUrl).pathname;
+
+  function offerUpdate(worker) {
+    var banner = document.getElementById("update-banner");
+    var button = document.getElementById("update-btn");
+    var title = document.getElementById("ub-title");
+    if (!banner || !button || !worker) return;
+    banner.classList.add("show");
+    if (title) title.textContent = "🎣 Mise à jour prête à installer !";
+    button.textContent = "Mettre à jour";
+    button.disabled = false;
+    button.onclick = function () {
+      button.disabled = true;
+      button.textContent = "Mise à jour…";
+      worker.postMessage("SKIP_WAITING");
+    };
+  }
+
+  navigator.serviceWorker.addEventListener("controllerchange", function () {
+    if (!hadController || reloading) return;
+    reloading = true;
+    window.location.reload();
+  });
+
+  navigator.serviceWorker.register(workerUrl, {
+    scope: workerScope,
+    updateViaCache: "none"
+  }).then(function (registration) {
+    if (registration.waiting && navigator.serviceWorker.controller) {
+      offerUpdate(registration.waiting);
+    }
+
+    registration.addEventListener("updatefound", function () {
+      var installing = registration.installing;
+      if (!installing) return;
+      installing.addEventListener("statechange", function () {
+        if (installing.state === "installed" && navigator.serviceWorker.controller) {
+          offerUpdate(registration.waiting || installing);
+        }
+      });
+    });
+
+    // Force une vérification au démarrage, sans attendre le délai automatique du navigateur.
+    registration.update().catch(function () {});
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") registration.update().catch(function () {});
+    });
+    window.addEventListener("focus", function () {
+      registration.update().catch(function () {});
+    });
+  }).catch(function (error) {
+    console.warn("Pêche Express : impossible d'enregistrer les mises à jour hors ligne.", error);
+  });
+})();
+
