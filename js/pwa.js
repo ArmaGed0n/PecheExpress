@@ -61,6 +61,7 @@
 (function () {
   if (!("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) return;
 
+  var hadController = !!navigator.serviceWorker.controller;
   var reloading = false;
   var scriptUrl = document.currentScript && document.currentScript.src;
   var workerUrl = scriptUrl ? new URL("../sw.js", scriptUrl).href : new URL("./sw.js", location.href).href;
@@ -98,8 +99,9 @@
   }
 
   navigator.serviceWorker.addEventListener("controllerchange", function () {
-    // Une mise à jour d'une application déjà contrôlée peut recharger automatiquement.
-    if (reloading) return;
+    // Ne pas recharger pendant la première prise de contrôle : laisser
+    // le bouton « Actualiser » être visible et laisser le joueur choisir.
+    if (!hadController || reloading) return;
     reloading = true;
     window.location.reload();
   });
