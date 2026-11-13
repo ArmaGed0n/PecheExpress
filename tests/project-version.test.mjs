@@ -24,5 +24,5 @@ test("les notes de version lisent la version HTML et non une variable privée", 
   const changelogJs = await read("js/changelog.js");
   assert.match(changelogJs, /function currentVersion\(\)/);
   assert.match(changelogJs, /meta\[name="app-version"\]/);
-  assert.doesNotMatch(changelogJs, /cmp\(e\.version, APP_VERSION\)/);
+  assert.doesNotMatch(changelogJs, /APP_VERSION/);
 });
