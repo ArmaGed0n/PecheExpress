@@ -1026,3 +1026,90 @@ html, body {
   #hud { top: max(4px, calc(env(safe-area-inset-top) + 2px)); }
   #info-chips { top: max(76px, calc(env(safe-area-inset-top) + 72px)); }
 }
+\n
+/* ===== HUD repensé : profil compact, infos regroupées et navigation en barre ===== */
+#hud { top: max(8px, env(safe-area-inset-top)); padding-top: 8px; padding-bottom: 0; }
+#hud-card {
+  max-width: 100%;
+  min-height: 78px;
+  padding: 6px 10px 6px 7px;
+  border-radius: 20px;
+  background: linear-gradient(115deg, rgba(18,43,73,.96), rgba(7,18,35,.94) 72%);
+  border-color: rgba(255,209,102,.42);
+  box-shadow: 0 7px 22px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.16);
+}
+#hud-av { width: clamp(48px, 13vw, 58px); height: clamp(48px, 13vw, 58px); }
+.hud-name { font-size: clamp(14px, 3.8vw, 16px); }
+.hud-rank #rank-val { font-size: 11px; }
+.hud-gold { padding: 5px 8px; font-size: 12px; }
+#info-chips {
+  top: auto;
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  bottom: calc(max(28px, env(safe-area-inset-bottom)) + 72px + 78px);
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  z-index: 11;
+}
+.info-chip {
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 14px;
+  font-size: 11px;
+  line-height: 1.15;
+  background: rgba(8,18,34,.78);
+  border-color: rgba(255,255,255,.17);
+  box-shadow: 0 4px 12px rgba(0,0,0,.18);
+}
+#top-buttons {
+  top: auto;
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  bottom: calc(max(28px, env(safe-area-inset-bottom)) + 72px + 25px);
+  flex-direction: row;
+  justify-content: center;
+  gap: clamp(7px, 2.5vw, 13px);
+  padding: 7px 9px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 22px;
+  background: rgba(5,14,28,.48);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+#top-buttons .icon-btn {
+  width: clamp(42px, 11.5vw, 48px);
+  height: clamp(42px, 11.5vw, 48px);
+  flex: 0 1 48px;
+  background: linear-gradient(145deg, rgba(35,54,79,.92), rgba(9,20,38,.94));
+  border-color: rgba(255,255,255,.16);
+  box-shadow: 0 4px 10px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.13);
+}
+#top-buttons .icon-btn img { width: 29px; height: 29px; object-fit: contain; }
+#skins-btn.bag-btn {
+  bottom: calc(max(28px, env(safe-area-inset-bottom)) + 72px + 12px);
+  width: 54px; height: 54px;
+}
+#action-btn-container { bottom: max(18px, env(safe-area-inset-bottom)); }
+#action-btn-container .btn-main { height: 68px; max-width: 360px; }
+@media (max-width: 380px) {
+  #hud-card { gap: 7px; }
+  #hud-av { width: 46px; height: 46px; }
+  .hud-gold { gap: 3px; padding: 4px 6px; }
+  #top-buttons { gap: 5px; padding: 6px; }
+  #top-buttons .icon-btn { width: 40px; height: 40px; }
+  #top-buttons .icon-btn img { width: 25px; height: 25px; }
+  .info-chip { font-size: 10px; padding: 5px 8px; }
+}
+@media (max-height: 720px) and (orientation: portrait) {
+  #info-chips { bottom: calc(max(18px, env(safe-area-inset-bottom)) + 62px + 68px); }
+  #top-buttons { bottom: calc(max(18px, env(safe-area-inset-bottom)) + 62px + 18px); }
+  #action-btn-container .btn-main { height: 60px; }
+}
+@media (max-height: 560px) and (orientation: landscape) {
+  #info-chips { top: auto; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 52px); left: 12px; right: auto; }
+  #top-buttons { top: max(8px, env(safe-area-inset-top)); bottom: auto; left: auto; right: max(10px, env(safe-area-inset-right)); flex-direction: column; padding: 4px; gap: 5px; }
+  #top-buttons .icon-btn { width: 36px; height: 36px; }
+  #skins-btn.bag-btn { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 54px); }
+}
