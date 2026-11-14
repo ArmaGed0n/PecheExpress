@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.0.33",
+    "date": "2026-11-14",
+    "notes": [
+      "Correction de l’affichage des cadres dans l’onglet Personnalisation : les aperçus restent contenus dans leurs cartes.",
+      "Rétablissement du positionnement et du dimensionnement des avatars et cadres sur mobile."
+    ]
+  },
+  {
     "version": "1.0.32",
     "date": "2026-11-14",
     "notes": [
