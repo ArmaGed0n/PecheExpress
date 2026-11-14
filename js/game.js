@@ -1836,6 +1836,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
     }
 
     const APP_VERSION = "1.0.32";   // garde le même numéro que VERSION dans sw.js
+    window.APP_VERSION = APP_VERSION;
     // Nettoyage des anciennes données locales du classement supprimé.
     try { ["peche_express_leaderboard_player_v1", "peche_express_leaderboard_pseudo_v1", "peche_express_leaderboard_pid_v1", "peche_express_leaderboard_queue_v1", "peche_express_leaderboard_profile_v1", "peche_express_home_top3_v1"].forEach(k => localStorage.removeItem(k)); } catch (e) {}
     let deferredInstall = null;
