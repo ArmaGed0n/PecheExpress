@@ -1226,3 +1226,37 @@ html, body {
   #shop-items .cs-btns .buy-btn { font-size: 10px; }
   #shop-items .lp-items { gap: 4px; }
 }
+
+
+/* Aperçus de cadres du profil : dimensions fixes pour éviter les images natives géantes. */
+.fa {
+  position: relative;
+  display: block;
+  width: var(--fs, 96px);
+  height: var(--fs, 96px);
+  flex: 0 0 var(--fs, 96px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  isolation: isolate;
+}
+.fa-in {
+  position: absolute;
+  z-index: 1;
+  overflow: hidden;
+}
+.fa-in img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.fa-fr {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
