@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.0.32",
+    "date": "2026-11-14",
+    "notes": [
+      "Correction de l’enregistrement du pseudo et du choix du titre dans le profil local.",
+      "Suppression du message faisant référence à l’ancien classement en ligne.",
+      "Réactivation de l’affichage des notes lorsqu’une nouvelle version est disponible.",
+      "Amélioration de l’accessibilité du profil et de la fenêtre des nouveautés."
+    ]
+  },
+  {
     "version": "1.0.31",
     "date": "2026-11-13",
     "notes": [
