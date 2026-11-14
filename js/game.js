@@ -1279,7 +1279,6 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
 
       saveGame(); updateHUD();
       // Envoie uniquement l'événement de capture ; le serveur calcule lui-même les statistiques du classement.
-      window.dispatchEvent(new CustomEvent("pe:fish-caught", { detail: { fishId: fish.id, weightCm: weight, pseudo: state.pseudo || "Pêcheur", level: state.level, xp: state.xp } }));
 
       document.getElementById("catch-emoji").innerHTML = fishIcon(fish);
       document.getElementById("catch-name").innerText = fish.name;
