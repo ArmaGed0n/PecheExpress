@@ -2,11 +2,11 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Pêche Express</title>
   <meta name="theme-color" content="#080d1a">
   <meta name="color-scheme" content="dark">
-  <meta name="app-version" content="1.0.31">
+  <meta name="app-version" content="1.0.32">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -80,18 +80,18 @@
     </div>
 
     <!-- Modale Profil du Pêcheur -->
-    <div class="modal" id="profile-modal">
+    <div class="modal" id="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
       <div class="modal-header">
-        <div class="modal-title"><img class="title-ic" data-sprite="icon_profile" alt=""> Profil du Pêcheur</div>
-        <button class="close-btn" id="close-profile">&times;</button>
+        <div class="modal-title" id="profile-modal-title"><img class="title-ic" data-sprite="icon_profile" alt=""> Profil du Pêcheur</div>
+        <button class="close-btn" id="close-profile" aria-label="Fermer le profil">&times;</button>
       </div>
       <div class="modal-body" id="profile-content"></div>
     </div>
 
     <!-- Modale Nouveautés (après une mise à jour) -->
-    <div class="modal" id="news-modal">
+    <div class="modal" id="news-modal" role="dialog" aria-modal="true" aria-labelledby="news-modal-title">
       <div class="modal-header">
-        <div class="modal-title">✨ Nouveautés</div>
+        <div class="modal-title" id="news-modal-title">✨ Nouveautés</div>
         <button class="close-btn" id="close-news">&times;</button>
       </div>
       <div class="modal-body" id="news-body"></div>
