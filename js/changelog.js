@@ -4,7 +4,8 @@
     function load(opts) { return fetch("changelog.json", opts || {}).then(function (r) { if (!r.ok) throw 0; return r.json(); }); }
     window.fillUpdateNotes = function () {
       load({ cache: "no-store" }).then(function (list) {
-        var news = list.filter(function (e) { return cmp(e.version, APP_VERSION) > 0; }); if (!news.length) return;
+        var currentVersion = window.APP_VERSION || APP_VERSION;
+        var news = list.filter(function (e) { return cmp(e.version, currentVersion) > 0; }); if (!news.length) return;
         document.getElementById("ub-title").textContent = "🎣 Version " + news[0].version + " disponible !";
         var ul = document.getElementById("ub-notes"); ul.innerHTML = "";
         news.forEach(function (e) { e.notes.forEach(function (n) { var li = document.createElement("li"); li.textContent = n; ul.appendChild(li); }); });
@@ -12,11 +13,12 @@
     };
     window.addEventListener("load", function () {
       if (!/^https?:$/.test(location.protocol)) return;
+      window.fillUpdateNotes();
       var seen = null; try { seen = localStorage.getItem("pe_seen_version"); } catch (e) {}
-      try { localStorage.setItem("pe_seen_version", APP_VERSION); } catch (e) {}
-      if (!seen || seen === APP_VERSION) return;
+      try { localStorage.setItem("pe_seen_version", window.APP_VERSION || APP_VERSION); } catch (e) {}
+      if (!seen || seen === (window.APP_VERSION || APP_VERSION)) return;
       load().then(function (list) {
-        var items = list.filter(function (e) { return cmp(e.version, seen) > 0 && cmp(e.version, APP_VERSION) <= 0; }); if (!items.length) return;
+        var items = list.filter(function (e) { return cmp(e.version, seen) > 0 && cmp(e.version, window.APP_VERSION || APP_VERSION) <= 0; }); if (!items.length) return;
         var body = document.getElementById("news-body"); body.innerHTML = "";
         items.forEach(function (e) {
           var t = document.createElement("div"); t.className = "news-ver"; t.textContent = "Version " + e.version;
