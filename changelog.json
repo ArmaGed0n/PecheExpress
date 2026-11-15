@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.0.34",
+    "date": "2026-11-15",
+    "notes": [
+      "Refonte graphique des skins Canard : personnage, bateau et canne dans un style cohérent avec les sprites du jeu.",
+      "Les trois skins Canard sont chargés comme des sprites dans la scène de pêche et l’aperçu de l’inventaire.",
+      "Proportions adaptées aux dimensions de rendu du jeu."
+    ]
+  },
+  {
     "version": "1.0.33",
     "date": "2026-11-14",
     "notes": [
