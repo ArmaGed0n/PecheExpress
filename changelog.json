@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.0.35",
+    "date": "2026-11-16",
+    "notes": [
+      "Correction de l’alignement vertical du Kayak Rapide : la coque est abaissée pour toucher la surface de l’eau.",
+      "L’ombre suit la nouvelle position de la coque ; le pêcheur et sa canne conservent leur position.",
+      "Ajustement appliqué également au rendu de secours du bateau."
+    ]
+  },
+  {
     "version": "1.0.34",
     "date": "2026-11-15",
     "notes": [
