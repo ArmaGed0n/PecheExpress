@@ -708,13 +708,15 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
 
       const boatX = dW * 0.18;
       const boatY = waterY + Math.sin(waveOffset * 1.5) * 3 + 2;
+      // Le Kayak Rapide a une marge transparente sous sa coque : on baisse uniquement sa coque.
+      const hullY = boatY + (boatId === "boat_kayak" ? 5 : 0);
 
-      // ombre sur l'eau
+      // ombre sur l'eau, alignée sous la coque
       ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
-      ctx.beginPath(); ctx.ellipse(boatX, boatY + 9, 46, 6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(boatX, hullY + 9, 46, 6, 0, 0, Math.PI * 2); ctx.fill();
 
       // bateau (448x200 px = 112x50 unités, origine -56,-32)
-      ctx.drawImage(boatImg, boatX - 56, boatY - 32, 112, 50);
+      ctx.drawImage(boatImg, boatX - 56, hullY - 32, 112, 50);
 
       // lueur de la lanterne / torche / néon (selon le bateau)
       {
@@ -784,9 +786,10 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
     function drawBoatAndFishermanVector(ctx, dW, waterY) {
       const boatX = dW * 0.18;
       const boatY = waterY + Math.sin(waveOffset * 1.5) * 3 + 2;
+      const hullY = boatY + (state.equippedSkins.boat === "boat_kayak" ? 5 : 0);
 
       ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-      ctx.beginPath(); ctx.ellipse(boatX, boatY + 8, 48, 10, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(boatX, hullY + 8, 48, 10, 0, 0, Math.PI * 2); ctx.fill();
 
       if (state.equippedSkins.boat === "boat_duck") {
         ctx.save();
@@ -807,9 +810,9 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       } else {
       ctx.fillStyle = "#5c3d2e";
       ctx.beginPath();
-      ctx.moveTo(boatX - 45, boatY - 8);
-      ctx.quadraticCurveTo(boatX, boatY + 18, boatX + 45, boatY - 8);
-      ctx.quadraticCurveTo(boatX, boatY - 2, boatX - 45, boatY - 8);
+      ctx.moveTo(boatX - 45, hullY - 8);
+      ctx.quadraticCurveTo(boatX, hullY + 18, boatX + 45, hullY - 8);
+      ctx.quadraticCurveTo(boatX, hullY - 2, boatX - 45, hullY - 8);
       ctx.fill();
       ctx.strokeStyle = "#3d2314"; ctx.lineWidth = 2; ctx.stroke();
       }
@@ -1834,7 +1837,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       return { catches, record, night, legend, species: Object.keys(state.caughtFish).length, spots: Object.keys(state.unlockedSpots).length, boss: state.stats.bossWins, quests: state.stats.questsDone };
     }
 
-    const APP_VERSION = "1.0.34";   // garde le même numéro que VERSION dans sw.js
+    const APP_VERSION = "1.0.35";   // garde le même numéro que VERSION dans sw.js
     window.APP_VERSION = APP_VERSION;
     // Nettoyage des anciennes données locales du classement supprimé.
     try { ["peche_express_leaderboard_player_v1", "peche_express_leaderboard_pseudo_v1", "peche_express_leaderboard_pid_v1", "peche_express_leaderboard_queue_v1", "peche_express_leaderboard_profile_v1", "peche_express_home_top3_v1"].forEach(k => localStorage.removeItem(k)); } catch (e) {}
