@@ -725,7 +725,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       const charSkin = state.equippedSkins.character;
       const rodId = state.equippedSkins.rod;
       const boatId = state.equippedSkins.boat || "boat_classic";
-      const boatImg = SP[boatId] || (boatId === "boat_duck" ? duckSkinImage(boatId) : SP.boat), charImg = SP[charSkin] || duckSkinImage(charSkin), rodImg = SP[rodId] || duckSkinImage(rodId);
+      const boatImg = SP[boatId] || SP.boat, charImg = SP[charSkin], rodImg = SP[rodId];
       if (!spriteOK(boatImg) || !spriteOK(charImg) || !spriteOK(rodImg)) {
         return drawBoatAndFishermanVector(ctx, dW, waterY);
       }
@@ -1865,7 +1865,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       return { catches, record, night, legend, species: Object.keys(state.caughtFish).length, spots: Object.keys(state.unlockedSpots).length, boss: state.stats.bossWins, quests: state.stats.questsDone };
     }
 
-    const APP_VERSION = "1.0.36";   // garde le même numéro que VERSION dans sw.js
+    const APP_VERSION = "1.0.37";   // garde le même numéro que VERSION dans sw.js
     window.APP_VERSION = APP_VERSION;
     // Nettoyage des anciennes données locales du classement supprimé.
     try { ["peche_express_leaderboard_player_v1", "peche_express_leaderboard_pseudo_v1", "peche_express_leaderboard_pid_v1", "peche_express_leaderboard_queue_v1", "peche_express_leaderboard_profile_v1", "peche_express_home_top3_v1"].forEach(k => localStorage.removeItem(k)); } catch (e) {}
@@ -2231,51 +2231,9 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       { id: "lure", label: "Leurres", img: "lure_duck" },
       { id: "bait", label: "Appâts", img: "bait_worm" }
     ];
-    const duckSkinSvg = id => {
-      let svg;
-      if (id === "char_duck") svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 176 224">
-        <defs><linearGradient id="y" x2="0" y2="1"><stop stop-color="#fff18a"/><stop offset=".55" stop-color="#ffd43b"/><stop offset="1" stop-color="#e99b18"/></linearGradient><linearGradient id="c" x2="0" y2="1"><stop stop-color="#2789b7"/><stop offset="1" stop-color="#12466e"/></linearGradient></defs>
-        <ellipse cx="87" cy="211" rx="42" ry="7" fill="#071827" opacity=".24"/>
-        <path d="M48 139Q49 121 65 116H111Q129 124 132 151L127 190H48Z" fill="url(#c)" stroke="#12334d" stroke-width="5"/>
-        <path d="M72 119L88 139L105 119" fill="#fff8e9" stroke="#b8d0dc" stroke-width="3"/><path d="M83 139H94L101 184H77Z" fill="#f4bd32" stroke="#a56b12" stroke-width="2"/>
-        <path d="M51 145Q31 153 39 177Q46 185 63 169M121 146Q143 151 139 174Q134 185 119 169" fill="#ffd447" stroke="#a56b12" stroke-width="4"/>
-        <path d="M64 189L61 204H81L85 190M96 190L101 204H121L116 189" fill="#ff9d24" stroke="#b65a12" stroke-width="4"/>
-        <ellipse cx="89" cy="79" rx="39" ry="44" fill="url(#y)" stroke="#a96b12" stroke-width="5"/><path d="M58 92Q72 111 91 105Q76 120 59 106Z" fill="#fff4bb" opacity=".72"/>
-        <path d="M111 79Q145 74 153 91Q138 107 109 96Z" fill="#ff8a24" stroke="#b84d12" stroke-width="4"/><ellipse cx="105" cy="66" rx="6" ry="8" fill="#172033"/><circle cx="107" cy="63" r="2.2" fill="#fff"/>
-        <path d="M49 48Q53 17 89 12Q125 16 130 49L121 58H57Z" fill="#edf5fa" stroke="#718b9c" stroke-width="4"/><path d="M43 54Q89 43 137 54L132 68Q88 61 48 69Z" fill="#245a84" stroke="#153d60" stroke-width="4"/>
-        <path d="M56 52Q88 42 122 52M76 54L89 59L103 54" fill="none" stroke="#fff" stroke-width="3"/><circle cx="89" cy="58" r="3" fill="#f4c542" stroke="#9b6b00" stroke-width="1.5"/>
-        </svg>`;
-      else if (id === "boat_duck") svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 200">
-        <defs><linearGradient id="r" x2="0" y2="1"><stop stop-color="#fff18a"/><stop offset=".48" stop-color="#ffd43b"/><stop offset="1" stop-color="#e89a16"/></linearGradient></defs>
-        <ellipse cx="218" cy="181" rx="178" ry="12" fill="#061827" opacity=".25"/><path d="M35 93Q51 155 139 165H292Q379 158 409 99Q392 184 286 190H141Q57 177 35 93Z" fill="#a95e12" stroke="#75430b" stroke-width="9"/>
-        <path d="M29 82Q103 116 215 111Q332 109 405 62Q400 147 300 161H143Q58 145 29 82Z" fill="url(#r)" stroke="#a56b12" stroke-width="9"/>
-        <path d="M55 91Q145 126 250 117Q327 112 380 82" fill="none" stroke="#fff7c1" stroke-width="10" stroke-linecap="round"/><path d="M150 117Q168 91 195 101Q211 111 205 139L172 145Z" fill="#bd7414" stroke="#a56b12" stroke-width="5"/>
-        <path d="M313 100Q316 48 349 26Q383 10 411 39Q439 68 411 105Q384 132 342 118Z" fill="url(#r)" stroke="#a56b12" stroke-width="9"/>
-        <path d="M399 69Q435 64 443 83Q425 104 394 94Z" fill="#ff8a24" stroke="#b84d12" stroke-width="6"/><ellipse cx="386" cy="49" rx="7" ry="10" fill="#172033"/><circle cx="389" cy="45" r="3" fill="#fff"/>
-        <path d="M338 114Q356 126 374 115" fill="none" stroke="#fff3ae" stroke-width="6" stroke-linecap="round"/><path d="M74 76Q112 58 148 72" fill="none" stroke="#fff" stroke-width="5" opacity=".65"/>
-        </svg>`;
-      else svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 120">
-        <defs><linearGradient id="g" x2="0" y2="1"><stop stop-color="#fff3a8"/><stop offset=".5" stop-color="#ffc928"/><stop offset="1" stop-color="#bd7410"/></linearGradient></defs>
-        <path d="M14 105Q78 89 160 15" fill="none" stroke="#6b430b" stroke-width="15" stroke-linecap="round"/><path d="M14 101Q78 85 160 11" fill="none" stroke="url(#g)" stroke-width="9" stroke-linecap="round"/>
-        <path d="M119 39Q128 17 145 15Q164 16 167 33Q169 48 153 57Q135 61 119 39Z" fill="#ffd43b" stroke="#a56b12" stroke-width="4"/>
-        <path d="M158 32Q175 29 179 39Q170 48 157 43Z" fill="#ff8a24" stroke="#b84d12" stroke-width="3"/><ellipse cx="151" cy="27" rx="3.5" ry="4.5" fill="#172033"/><circle cx="152" cy="25.5" r="1.2" fill="#fff"/>
-        <path d="M125 51Q142 61 158 51" fill="none" stroke="#fff3ad" stroke-width="3" stroke-linecap="round"/><circle cx="17" cy="101" r="8" fill="#ffd43b" stroke="#9b6b00" stroke-width="3"/>
-        </svg>`;
-      return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-    };
-    const duckSkinImages = Object.create(null);
-    const duckSkinImage = id => {
-      if (!["char_duck", "boat_duck", "rod_duck"].includes(id)) return null;
-      if (!duckSkinImages[id]) {
-        const im = new Image(); duckSkinImages[id] = im;
-        im.onload = () => { if (document.getElementById("inv-preview")) drawInvPreview(); };
-        im.src = duckSkinSvg(id);
-      }
-      return duckSkinImages[id];
-    };
     const spriteSrc = id => {
       const im = (window.SPRITES || {})[id];
-      return im ? im.src : (["char_duck", "boat_duck", "rod_duck"].includes(id) ? duckSkinSvg(id) : "");
+      return im ? im.src : "";
     };
     window.setInvTab = function (t) { invTab = t; renderSkins(); };
 
@@ -2284,7 +2242,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       const cv = document.getElementById("inv-preview"); if (!cv) return;
       const SP = window.SPRITES || {}, eq = state.equippedSkins;
       const boatId = eq.boat || "boat_classic";
-      const boat = SP[boatId] || (boatId === "boat_duck" ? duckSkinImage(boatId) : SP.boat), ch = SP[eq.character] || duckSkinImage(eq.character), rod = SP[eq.rod] || duckSkinImage(eq.rod), lure = SP[eq.lure];
+      const boat = SP[boatId] || SP.boat, ch = SP[eq.character], rod = SP[eq.rod], lure = SP[eq.lure];
       if (![boat, ch, rod, lure].every(spriteOK)) {
         if ([eq.boat, eq.character, eq.rod].some(id => ["boat_duck", "char_duck", "rod_duck"].includes(id))) {
           invTries = 0;
