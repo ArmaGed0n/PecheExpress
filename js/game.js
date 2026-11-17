@@ -696,6 +696,30 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       return `<img class="fish-img" alt="${f.name}" src="${im.src}"` + (px ? ` style="width:${px}px"` : "") + `>`;
     }
 
+    const spriteAlphaBoundsCache = new WeakMap();
+    function spriteAlphaBounds(im) {
+      if (!im || !im.naturalWidth || !im.naturalHeight) return null;
+      if (spriteAlphaBoundsCache.has(im)) return spriteAlphaBoundsCache.get(im);
+      let bounds = null;
+      try {
+        const c = document.createElement("canvas");
+        c.width = im.naturalWidth; c.height = im.naturalHeight;
+        const cx = c.getContext("2d", { willReadFrequently: true });
+        cx.drawImage(im, 0, 0);
+        const px = cx.getImageData(0, 0, c.width, c.height).data;
+        let minX = c.width, minY = c.height, maxX = -1, maxY = -1;
+        for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) {
+          if (px[(y * c.width + x) * 4 + 3] > 8) {
+            if (x < minX) minX = x; if (x > maxX) maxX = x;
+            if (y < minY) minY = y; if (y > maxY) maxY = y;
+          }
+        }
+        if (maxX >= minX && maxY >= minY) bounds = { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+      } catch (_) {}
+      spriteAlphaBoundsCache.set(im, bounds);
+      return bounds;
+    }
+
     function drawBoatAndFisherman(ctx, dW, waterY) {
       const SP = window.SPRITES || {};
       const charSkin = state.equippedSkins.character;
@@ -707,22 +731,26 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       }
 
       const boatX = dW * 0.18;
-      const boatY = waterY + Math.sin(waveOffset * 1.5) * 3 + 2;
-      // Le Kayak Rapide a une marge transparente sous sa coque : on baisse uniquement sa coque.
-      const hullY = boatY + (boatId === "boat_kayak" ? 5 : 0);
+      const bobOffset = Math.sin(waveOffset * 1.5) * 3;
+      const boatY = waterY + bobOffset + 2;
+      // Mesure la vraie zone opaque du PNG : le kayak possède une grande marge transparente.
+      const bounds = spriteAlphaBounds(boatImg);
+      const visibleBottom = bounds ? (bounds.y + bounds.h) * 50 / boatImg.naturalHeight : 50;
+      const boatTop = waterY + bobOffset + 1 - visibleBottom;
+      const actorY = boatY + (boatTop - (boatY - 32));
 
-      // ombre sur l'eau, alignée sous la coque
+      // Ombre placée juste sous la coque, au niveau de l'eau.
       ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
-      ctx.beginPath(); ctx.ellipse(boatX, hullY + 9, 46, 6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(boatX, waterY + bobOffset + 7, 46, 6, 0, 0, Math.PI * 2); ctx.fill();
 
-      // bateau (448x200 px = 112x50 unités, origine -56,-32)
-      ctx.drawImage(boatImg, boatX - 56, hullY - 32, 112, 50);
+      // Sprite complet conservé à son échelle ; son point d'ancrage suit le bas opaque.
+      ctx.drawImage(boatImg, boatX - 56, boatTop, 112, 50);
 
       // lueur de la lanterne / torche / néon (selon le bateau)
       {
         const BG = BOAT_GLOW[boatId];
         if (BG) {
-          const gx = boatX + BG.x, gy = boatY + BG.y;
+          const gx = boatX + BG.x, gy = actorY + BG.y;
           const flick = 0.85 + Math.sin(Date.now() * 0.011) * 0.08 + Math.sin(Date.now() * 0.023) * 0.05;
           const g = ctx.createRadialGradient(gx, gy, 1, gx, gy, 20);
           g.addColorStop(0, "rgba(" + BG.c + ", " + (0.55 * flick) + ")");
@@ -734,11 +762,11 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       }
 
       // pêcheur (176x224 px = 44x56 unités, origine -22,-62)
-      ctx.drawImage(charImg, boatX - 22, boatY - 62, 44, 56);
+      ctx.drawImage(charImg, boatX - 22, actorY - 62, 44, 56);
 
       // canne : base dans la main, bout qui plie pendant le combat
-      const baseX = boatX + 10.8, baseY = boatY - 17.2;
-      let tipX = boatX + 41, tipY = boatY - 50;
+      const baseX = boatX + 10.8, baseY = actorY - 17.2;
+      let tipX = boatX + 41, tipY = actorY - 50;
       if (state.phase === "REELING") {
         const bend = (state.tension / 100) * 18;
         tipX -= bend * 0.4;
@@ -1837,7 +1865,7 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       return { catches, record, night, legend, species: Object.keys(state.caughtFish).length, spots: Object.keys(state.unlockedSpots).length, boss: state.stats.bossWins, quests: state.stats.questsDone };
     }
 
-    const APP_VERSION = "1.0.35";   // garde le même numéro que VERSION dans sw.js
+    const APP_VERSION = "1.0.36";   // garde le même numéro que VERSION dans sw.js
     window.APP_VERSION = APP_VERSION;
     // Nettoyage des anciennes données locales du classement supprimé.
     try { ["peche_express_leaderboard_player_v1", "peche_express_leaderboard_pseudo_v1", "peche_express_leaderboard_pid_v1", "peche_express_leaderboard_queue_v1", "peche_express_leaderboard_profile_v1", "peche_express_home_top3_v1"].forEach(k => localStorage.removeItem(k)); } catch (e) {}
