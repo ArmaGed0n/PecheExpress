@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.0.36",
+    "date": "2026-11-17",
+    "notes": [
+      "Alignement du bateau calculé depuis les pixels réellement opaques de son PNG, et non depuis une marge fixe.",
+      "Le personnage et la canne suivent le nouvel ancrage du bateau ; l’ombre reste au niveau de l’eau.",
+      "Correction applicable aux sprites de bateau ayant des marges transparentes variables."
+    ]
+  },
+  {
     "version": "1.0.35",
     "date": "2026-11-16",
     "notes": [
