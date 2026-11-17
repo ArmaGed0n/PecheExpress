@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.0.37",
+    "date": "2026-11-17",
+    "notes": [
+      "Centralisation des trois skins Canard (personnage, bateau et canne) dans js/sprites.js, avec les autres sprites.",
+      "Le jeu et les aperçus utilisent désormais window.SPRITES pour charger les skins Canard.",
+      "Suppression de la génération SVG dupliquée dans game.js ; équipements et progression conservés."
+    ]
+  },
+  {
     "version": "1.0.36",
     "date": "2026-11-17",
     "notes": [
